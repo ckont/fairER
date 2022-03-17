@@ -44,7 +44,79 @@
     </nav>
 
     <div class="container-fluid text-center">
+        <div class="select-dataset-container">
+            <hr>
+            <p><b>Select a Dataset from our list or upload a dataset of your choice.</b></p>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"
+                    onclick="datasetOptions('select')">
+                <label class="form-check-label" for="inlineRadio1">Select a Dataset</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"
+                    onclick="datasetOptions('upload')">
+                <label class="form-check-label" for="inlineRadio2">Upload your Dataset</label>
+            </div>
 
+
+            <div id="select-dataset" style="display:none">
+                <select class="form-select margin-l-r" id="dataset-val">
+                    <option value="0" selected>BeerAdvo-RateBeer</option>
+                    <option value="1">iTunes-Amazon</option>
+                    <option value="2">Fodors-Zagats</option>
+                    <option value="3">DBLP-ACM</option>
+                    <option value="4">DBLP-Scholar</option>
+                    <option value="5">Amazon-Google</option>
+                    <option value="6">Walmart-Amazon</option>
+                </select>
+                <button type="button" class="btn btn-secondary btn-sm margin-l-r"
+                    onclick="goToUrl('http://github.com/anhaidgroup/deepmatcher/blob/master/Datasets.md')">Datasets
+                    Info
+                </button>
+            </div>
+            <div id="upload-dataset" style="display:none">
+                <p style="color: red; margin-top: 1%;">Not available!</p>
+            </div>
+        </div>
+
+        <div id="table-container">
+
+
+        </div>
+        <div id="table-loader" class="loader" style="display:none"></div>
+        <hr>
+        <form id="algoForm">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="faireroption" name="inlineRadioOptions" value="fairER"
+                    checked>
+                <label class="form-check-label" for="faireroption">FairER</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="fairoption" name="inlineRadioOptions" value="fair"
+                    disabled>
+                <label class="form-check-label" for="fairoption">Fair</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="unfairoption" name="inlineRadioOptions" value="unfair">
+                <label class="form-check-label" for="unfairoption">Unfair</label>
+            </div>
+        </form>
+
+
+        <div class="buttons-container">
+            <div class="dropdown margin-l-r">
+                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="evaluation-button"
+                    data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                    Get Evaluation Results
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item" onclick="getEval('EvaluationResults')">All</a></li>
+                    <li><a class="dropdown-item" onclick="getEval('Accuracy')">Accuracy</a></li>
+                    <li><a class="dropdown-item" onclick="getEval('SPD')">SPD</a></li>
+                    <li><a class="dropdown-item" onclick="getEval('EOD')">EOD</a></li>
+                </ul>
+            </div>
+        </div>
 
     </div>
 
