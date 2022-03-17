@@ -4,13 +4,19 @@ from pathlib import Path
 
 
 def runAlgorithm(algo, dataset, explanation): 
+    cur_dir = os.path.abspath(".")
+    parent_dir = Path(os.getcwd()).parent.absolute()
+    os.chdir(parent_dir) 
+    os.system('python3 main_'+algo+'.py '+dataset+' '+str(explanation))
+    os.chdir(cur_dir)
 
+def runStatistics(dataset):
     cur_dir = os.path.abspath(".")
     parent_dir = Path(os.getcwd()).parent.absolute()
     os.chdir(parent_dir)
-    
-    os.system('python3 main_'+algo+'.py '+dataset+' '+str(explanation))
+    os.system('python3 statistics.py '+dataset)
     os.chdir(cur_dir)
+
 
 def stringToBool(arg):
     if arg == '0':

@@ -96,3 +96,34 @@ function getClusters() {
         }
     });
 }
+
+function getStatistics() {
+    var table_container = $('#table-container');
+    var table_loader = $('#table-loader');
+    clearTables();
+    table_loader.show();
+    var dataset = $('#dataset-val').val()
+
+    $.ajax({
+        type: "GET",
+        url: "http://127.0.0.1:5000/requests/getStatistics?dataset=" + getDatasetName(dataset),
+        contentType: "application/json",
+        dataType: 'text',
+        success: function (response) {
+            table_loader.hide();
+            const obj = JSON.parse(response);
+
+            header = ["Number of Protected Matches", "Number of non-Protected Matches",
+                "Avg. Score Protected", "Agv. Score non-Protected", "Avg Score Protected Matches",
+                "Avg Score non-Protected Matches"];
+            body = [obj.num_protected_matches, obj.num_nonprotected_matches, obj.avg_score_protected,
+            obj.avg_score_nonprotected, obj.avg_score_protected_matches, obj.avg_score_nonprotected_matches];
+
+            htmlRes = tableBuilder(header, body);
+            table_container.html(htmlRes);
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}

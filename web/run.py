@@ -149,7 +149,34 @@ def getClust():
     )
     return response
 
+
+#######################################################################
+# @parameters:                                                        #
+#          --dataset -> the dataset to get the statistics for         #
+#          --arg -> run the specific algorithm to get the statistics  #
+#######################################################################
+@app.route('/requests/getStatistics', methods=['GET'])
+def getStats():
+    dataset = request.args.get('dataset')
     
+    methods.runStatistics(dataset)
+    
+    with open('data/json_data/statistics_data.json') as json_file:
+        data = json.load(json_file)
+    
+    response = app.response_class(
+        response=json.dumps({'num_protected_matches': data['num_protected_matches'],
+                            'num_nonprotected_matches':  data['num_nonprotected_matches'],
+                            'avg_score_protected': data['avg_score_protected'],
+                            'avg_score_nonprotected': data['avg_score_nonprotected'],
+                            'avg_score_protected_matches': data['avg_score_protected_matches'],
+                            'avg_score_nonprotected_matches': data['avg_score_nonprotected_matches']}),
+        mimetype='application/json'
+    )
+ 
+    return response
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -3,3 +3,4 @@
 *.csv
 resources/datasets
 __pycache__/
+web/data/json_data/*.json
