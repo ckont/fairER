@@ -195,5 +195,69 @@ def getProtectedCondition():
 
 
 
+###############################################################
+# @parameters:                                                #
+#          --dataset -> the dataset to get the attributes for #
+#          --arg -> left or right table                       #
+###############################################################
+@app.route("/requests/getTableAttributes")
+def getTablesAttributes():
+    dataset = request.args.get('dataset')
+    arg = request.args.get('arg')
+    attributes_json = methods.getAttributes(arg, dataset)
+    
+    response = app.response_class(
+        response=attributes_json,
+        mimetype='application/json'
+    )
+    return response
+
+
+#############################################################################
+# @parameters:                                                              #
+#          --dataset -> the dataset that contains this tuple                #
+#          --arg -> left or right table                                     #
+#          --json -> a json object that contains the values for this tuple  #
+#############################################################################
+@app.route("/requests/getTupleIsProtected")
+def getTupleIsProtected():
+    dataset = request.args.get('dataset')
+    arg = request.args.get('arg')
+    json_str = request.args.get('json')
+    #attributes_json = mylib.getAttributes(arg, dataset)
+
+    json_obj = json.loads(json_str)
+    result = methods.checkTupleProtected(dataset, arg, json_obj["attributes"])
+    response = app.response_class(
+        response = json.dumps({'res': str(result)}),
+        mimetype = 'application/json'
+    )
+    return response
+
+##################################################################################
+# @parameters:                                                                   #
+#          --dataset -> the dataset that contains this tuple                     #
+#          --json1 -> a json object that contains the values of the first table  #
+#          --json1 -> a json object that contains the values of the second table #
+##################################################################################
+@app.route("/requests/getPairIsProtected")
+def getPairIsProtected():
+    dataset = request.args.get('dataset')
+    json_str1 = request.args.get('json1')
+    json_str2 = request.args.get('json2')
+
+    json_obj1 = json.loads(json_str1)
+    json_obj2 = json.loads(json_str2)
+    result1 = methods.checkTupleProtected(dataset, 'right', json_obj1["right_table"])
+    result2 = methods.checkTupleProtected(dataset, 'left', json_obj2["left_table"])
+    pair_is_protected = result1 or result2
+
+    response = app.response_class(
+        response = json.dumps({'res': str(pair_is_protected)}),
+        mimetype = 'application/json'
+    )
+    return response
+
+
 if __name__ == "__main__":
     app.run(debug=True)

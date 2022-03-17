@@ -1,3 +1,4 @@
+import pandas as pd
 import json
 import os
 import csv
@@ -71,3 +72,41 @@ def csv_to_json(csvFilePath, jsonFilePath):
     with open(jsonFilePath, 'w+', encoding='utf-8') as jsonFile:
         jsonString = json.dumps(jsonArray, indent=4)
         jsonFile.write(jsonString)
+
+
+def checkTupleProtected(dataset, arg, json_obj):
+    key = []
+    value = []
+
+    for data in json_obj:
+        key.append(arg + "_" + list(data.keys())[0])
+        value.append(data.get(list(data.keys())[0]))
+
+    df = pd.DataFrame(columns=key)
+    for i in range(len(json_obj)):
+        this_column = df.columns[i]
+        df[this_column] = [value[i]]
+
+    return util.tuple_is_protected(df, arg, dataset)
+
+
+def getAttributes(arg, dataset):
+
+    if arg == 'right':
+        file = 'tableA.csv'
+    else:
+        file = 'tableB.csv'
+
+    with open('../resources/DeepMatcherDatasets/'+dataset+'/'+file) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        list_of_column_names = []
+
+        # iterate through the rows of csv
+        for row in csv_reader:
+            list_of_column_names.append(row)
+            break  # break the loop after the first iteration
+
+        list_of_column_names[0].pop(0)  # we dont want 'id' attribute
+
+        jsonString = json.dumps(list_of_column_names[0])
+    return jsonString

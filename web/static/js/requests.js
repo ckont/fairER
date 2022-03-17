@@ -151,3 +151,159 @@ function getCondition(){
         }
     });
 }
+
+
+
+function getPairFields(){
+    var protected_container = $('#protected-container');
+    var protected_loader = $('#protected-loader');
+    var dataset = $('#dataset-val').val();
+    clearTables();
+    protected_loader.show();
+
+    $.ajax({
+        type: "GET",
+        url: "http://127.0.0.1:5000/requests/getTableAttributes?dataset=" + getDatasetName(dataset) + "&arg=right",
+        contentType: "application/json",
+        dataType: 'text',
+        success: function (response) {
+            protected_loader.hide();
+            var obj1 = JSON.parse(response);
+            
+
+            $.ajax({
+                type: "GET",
+                url: "http://127.0.0.1:5000/requests/getTableAttributes?dataset=" + getDatasetName(dataset) + "&arg=left",
+                contentType: "application/json",
+                dataType: 'text',
+                success: function (response) {
+                    protected_loader.hide();
+                    var obj2 = JSON.parse(response);
+                    
+                    protected_container.show();
+                    protected_container.html(pairAttributesToInput(obj1, obj2));                  
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+
+            
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+
+function getPairIsProtected(){
+    var protected_container = $('#protected-container');
+    var protected_loader = $('#protected-loader');
+    var dataset = $('#dataset-val').val()
+
+    //Build a json with all the data from the form
+    var str1 = '{ "right_table" : [';
+
+    $("form#attr-form :input").each(function () {
+        if(leftOrRightTable($(this).attr('id'))== 'right')
+            str1 += '{ "' + clearPrefix($(this).attr('id')) + '": "' + $(this).val() + '" },';
+    });
+    str1 = str1.slice(0, -1); //remove the last comma
+    str1 += ' ]}';
+
+    var str2 = '{ "left_table" : [';
+
+    $("form#attr-form :input").each(function () {
+        if(leftOrRightTable($(this).attr('id'))== 'left')
+            str2 += '{ "' + clearPrefix($(this).attr('id')) + '": "' + $(this).val() + '" },';
+    });
+    str2 = str2.slice(0, -1); //remove the last comma
+    str2 += ' ]}';
+
+
+    clearTables();
+    protected_loader.show();
+
+    $.ajax({
+        type: "GET",
+        url: "http://127.0.0.1:5000/requests/getPairIsProtected?dataset=" + getDatasetName(dataset) + "&json1=" + str1 + "&json2=" + str2,
+        contentType: "application/json",
+        dataType: 'text',
+        success: function (response) {
+            protected_loader.hide();
+            var obj = JSON.parse(response);
+            
+            protected_container.html(obj.res);
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+function getTupleIsProtected() {
+    var protected_container = $('#protected-container');
+    var protected_loader = $('#protected-loader');
+    var dataset = $('#dataset-val').val()
+
+
+    var str = '{ "attributes" : [';
+
+    $("form#attr-form :input").each(function () {
+        str += '{ "' + $(this).attr('id') + '": "' + $(this).val() + '" },';
+    });
+    str = str.slice(0, -1); //remove the last comma
+    str += ' ]}';
+
+    clearTables();
+    protected_loader.show();
+
+        
+    if ($('#right'))
+        arg = "right";
+    else
+        arg = "left";
+
+    $.ajax({
+        type: "GET",
+        url: "http://127.0.0.1:5000/requests/getTupleIsProtected?dataset=" + getDatasetName(dataset) + "&arg=" + arg + "&json=" + str,
+        contentType: "application/json",
+        dataType: 'text',
+        success: function (response) {
+            protected_loader.hide();
+            var obj = JSON.parse(response);
+            
+            protected_container.html(obj.res);
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+
+}
+
+function getAttributes(arg) {
+    var protected_container = $('#protected-container');
+    var protected_loader = $('#protected-loader');
+    //clearTables();
+    protected_loader.show();
+    var dataset = $('#dataset-val').val()
+
+    $.ajax({
+        type: "GET",
+        url: "http://127.0.0.1:5000/requests/getTableAttributes?dataset=" + getDatasetName(dataset) + "&arg=" + arg,
+        contentType: "application/json",
+        dataType: 'text',
+        success: function (response) {
+            protected_loader.hide();
+            var obj = JSON.parse(response);
+
+            htmlRes = tupleAttributesToInput(obj, arg);
+            protected_container.html(htmlRes);
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}

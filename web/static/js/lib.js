@@ -35,7 +35,7 @@ function datasetOptions(option) {
 }
 
 function clearTables() {
-    $('#table-container').html(""); 
+    $('#table-container').html("");
     $('#protected-container').html("");
 }
 
@@ -54,31 +54,26 @@ function tableBuilder(header, body) {
 }
 
 
-const tableInitPart = '<button type="button" class="btn btn-danger" onclick="clearTables();">Clear Table</button>' +
-    '<button type="button" class="btn btn-success" onclick="htmlToCSV();">Download as CSV</button>' +
-    '<br><br><table class="table" id="table"><thead><tr>';
-
-
 function htmlToCSV(filename) {
     if (filename == null)
         filename = "output";
     filename += ".csv";
-    
-    
+
+
     var data = [];
     var rows = document.querySelectorAll("table tr");
-    
+
     for (var i = 0; i < rows.length; i++) {
         var row = [], cols = rows[i].querySelectorAll("td, th");
         for (var j = 0; j < cols.length; j++)
             row.push(cols[j].innerText);
-    
+
         data.push(row.join(","));
     }
     downloadCSVFile(data.join("\n"), filename);
 }
-    
-    
+
+
 function downloadCSVFile(csv, filename) {
     var csv_file, download_link;
     csv_file = new Blob([csv], { type: "text/csv" });
@@ -151,3 +146,81 @@ function clustersTableBuilder(header, body) {
 
     return str;
 }
+
+/* Return 'right' if the param string begins with the word "right"
+   otherwise return 'left' */
+function leftOrRightTable(str) {
+    var temp = str.substring(0, 5);
+    if (temp == 'right')
+        return temp;
+    else
+        return 'left';
+}
+
+function clearPrefix(str) {
+    if (leftOrRightTable(str) == 'right')
+        return str.substring(6);
+    else
+        return str.substring(5);
+}
+
+
+function leftOrRight() {
+    clearTables();
+    $('#protected-container').show();
+    str = '<p><b>Select left or right table: </b></p>' +
+        '<div class="form-check form-check-inline">' +
+        '<input class="form-check-input" type="radio"id="rightOption"' +
+        'onclick="getAttributes(\'right\')">' +
+        '<label class="form-check-label" for="rightOption">Right</label>' +
+        '</div>' +
+        '<div class="form-check form-check-inline">' +
+        '<input class="form-check-input" type="radio" id="leftOption" ' +
+        '  onclick="getAttributes(\'left\')">' +
+        '<label class="form-check-label" for="leftOption">Left</label>' +
+        '</div>' +
+        '<button type="button" class="btn btn-primary btn-sm margin-l-r" id="check-protected-button" style="display: none;"' +
+        'onclick="getTupleIsProtected()">Check' +
+        '</button>';
+    $('#protected-container').html(str);
+}
+
+function tupleAttributesToInput(attr_list, arg) {
+    var htmlRes = '<form id="attr-form">';
+
+
+    for (var value of attr_list) {
+        htmlRes += '<div><label for="' + value + '" class="form-label">' + value + '</label>';
+        htmlRes += '<input type="text" class="form-control" id="' + value + '"></div>';
+    }
+
+    htmlRes += "</form><p id='" + arg + "'></p>";
+    htmlRes += "<div class='break'></div><button type='button' class='btn btn-success' onclick='getTupleIsProtected();'>Check</button>";
+    return htmlRes;
+}
+
+
+function pairAttributesToInput(obj1, obj2) {
+    var htmlRes = '<form id="attr-form"><br><h2>Right Table Attributes</h2><br>';
+
+
+    for (var value of obj1) {
+        htmlRes += '<div><label for="right-' + value + '" class="form-label">' + value + '</label>';
+        htmlRes += '<input type="text" class="form-control" id="right-' + value + '"></div>';
+    }
+
+    htmlRes += '<br></br><h2>Left Table Attributes</h2><br>'
+
+    for (var value of obj2) {
+        htmlRes += '<div><label for="left-' + value + '" class="form-label">' + value + '</label>';
+        htmlRes += '<input type="text" class="form-control" id="left-' + value + '"></div>';
+    }
+
+    htmlRes += "</form>";
+    htmlRes += "<div class='break'></div><button type='button' class='btn btn-success' onclick='getPairIsProtected();'>Check</button>";
+    return htmlRes;
+}
+
+const tableInitPart = '<button type="button" class="btn btn-danger" onclick="clearTables();">Clear Table</button>' +
+    '<button type="button" class="btn btn-success" onclick="htmlToCSV();">Download as CSV</button>' +
+    '<br><br><table class="table" id="table"><thead><tr>';
