@@ -1,3 +1,4 @@
+from crypt import methods
 from matching import run_deepmatcher as dm
 import sys
 import pandas as pd
@@ -9,6 +10,7 @@ import evaluation.accuracy as eval
 import evaluation.fairness as f_eval
 import util
 import time
+import web.library.methods
 
 
 def run(data, data_path, train_file, valid_file, test_file, k_results):
@@ -73,6 +75,16 @@ def run(data, data_path, train_file, valid_file, test_file, k_results):
 
     clusters = umc.run(re_ranked_pairs[:k_results])
     #print("\nclustering results:\n", clusters)
+
+
+
+
+    ###########################
+    # Write preds to json file
+    ###########################
+    web.library.methods.csv_to_json(data_path + '/dm_results.csv',
+                      'web/data/json_data/preds_data.json')
+
 
     return clusters, preds
 

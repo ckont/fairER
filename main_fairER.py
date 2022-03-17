@@ -36,6 +36,18 @@ def run(data, data_path, train_file, valid_file, test_file, explanation,k_result
 
     clusters = fumc.run(initial_pairs, k_results)
     # print("\nclustering results:\n", clusters)
+
+
+
+
+    ###########################
+    # Write preds to json file
+    ###########################
+    methods.csv_to_json(data_path + '/dm_results.csv',
+                      'web/data/json_data/preds_data.json')
+
+
+
     return clusters, preds
 
 

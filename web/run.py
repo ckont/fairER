@@ -106,5 +106,31 @@ def getEvaluationResults():
     )
     return response
 
+###############################################################################
+# @parameters:                                                                #
+#          --dataset -> the dataset to get the preds for                      #
+#          --alg -> run the specific algorithm to get the preds               #
+###############################################################################
+@app.route('/requests/getPreds', methods=['GET'])
+def getPreds():
+    dataset = request.args.get('dataset')
+    alg = request.args.get('alg')
+    explanation = request.args.get('explanation')
+    
+    methods.runAlgorithm(alg, dataset, explanation)
+
+    with open('data/json_data/preds_data.json') as json_file: # open the file that was created
+        data = json.load(json_file) # get the data from this file
+
+    response = app.response_class(
+        response=json.dumps({'preds': str(data)}),
+        mimetype='application/json'
+    )
+    return response
+
+
+
+    
+
 if __name__ == "__main__":
     app.run(debug=True)

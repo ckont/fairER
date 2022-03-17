@@ -29,7 +29,34 @@ function getEval(arg) {
             else
                 body = [getDatasetName(dataset), alg, obj.accuracy, obj.spd, obj.eod];
 
-            htmlRes = simpleTableBuilder(header, body);
+            htmlRes = tableBuilder(header, body);
+            table_container.html(htmlRes);
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+function getPreds() {
+    var table_container = $('#table-container');
+    var table_loader = $('#table-loader');
+    clearTables()
+    table_loader.show();
+    var dataset = $('#dataset-val').val()
+    arg = $("#algoForm input[type='radio']:checked").val()
+
+    $.ajax({
+        type: "GET",
+        url: "http://127.0.0.1:5000/requests/getPreds?alg=" + arg + "&dataset=" + getDatasetName(dataset)+"&explanation=0",
+        contentType: "application/json",
+        dataType: 'text',
+        success: function (response) {
+            table_loader.hide();
+            var obj = JSON.parse(response);
+            var jsonData = eval(obj.preds);
+
+            htmlRes = predsToTable(jsonData);
             table_container.html(htmlRes);
         },
         error: function (error) {

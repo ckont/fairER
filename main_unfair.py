@@ -1,12 +1,12 @@
 from matching import run_deepmatcher as dm
-import sys , json
+import sys ,json , os, util, time
 import pandas as pd
-import os
 from clustering import unique_mapping_clustering as umc
 import evaluation.accuracy as eval
 import evaluation.fairness as f_eval
-import util
-import time
+import web.library.methods as methods
+
+
 
 def run(data, data_path, train, valid, test, k_results):
     ###########
@@ -34,6 +34,13 @@ def run(data, data_path, train, valid, test, k_results):
 
     original_clusters = umc.run(initial_pairs[:k_results])
     # print("\nclustering results:\n", original_clusters)
+
+
+    ###########################
+    # Write preds to json file
+    ###########################
+    methods.csv_to_json(data_path + '/dm_results.csv',
+                      'web/data/json_data/preds_data.json')
 
     return original_clusters, preds
 
