@@ -176,6 +176,23 @@ def getStats():
  
     return response
 
+#############################################################################
+# @parameters:                                                              #
+#          --dataset -> the dataset that contains this tuple                #
+#          --arg -> left or right table                                     #
+#          --json -> a json object that contains the values for this tuple  #
+#############################################################################
+@app.route("/requests/getProtectedCondition")
+def getProtectedCondition():
+    dataset = request.args.get('dataset')
+
+    result = methods.protectedCond(dataset)
+    response = app.response_class(
+        response = json.dumps({'res': str(result)}),
+        mimetype = 'application/json'
+    )
+    return response
+
 
 
 if __name__ == "__main__":

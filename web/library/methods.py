@@ -1,14 +1,19 @@
-import json, os, csv
+import json
+import os
+import csv
+import sys
 from pathlib import Path
+sys.path.append(os.path.abspath('../'))
+import util
 
 
-
-def runAlgorithm(algo, dataset, explanation): 
+def runAlgorithm(algo, dataset, explanation):
     cur_dir = os.path.abspath(".")
     parent_dir = Path(os.getcwd()).parent.absolute()
-    os.chdir(parent_dir) 
+    os.chdir(parent_dir)
     os.system('python3 main_'+algo+'.py '+dataset+' '+str(explanation))
     os.chdir(cur_dir)
+
 
 def runStatistics(dataset):
     cur_dir = os.path.abspath(".")
@@ -23,6 +28,7 @@ def stringToBool(arg):
         return False
     else:
         return True
+
 
 def getAccuracy(algo, dataset, explanation):
     runAlgorithm(algo, dataset, explanation)
@@ -43,6 +49,10 @@ def getSPD(arg, dataset, explanation):
     with open('data/json_data/evaluation_data.json') as json_file:
         data = json.load(json_file)
     return str(data['SPD'])
+
+
+def protectedCond(dataset):
+    return util.pair_is_protected(dataset=dataset, returnCond=True)
 
 
 def csv_to_json(csvFilePath, jsonFilePath):

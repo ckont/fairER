@@ -72,6 +72,9 @@
                 <button type="button" class="btn btn-primary btn-sm margin-l-r" id="statistics-button"
                     onclick="getStatistics()">Dataset Statistics
                 </button>
+                <button type="button" class="btn btn-primary btn-sm margin-l-r" id="statistics-button"
+                    onclick="getCondition()">Get "Protected" Condition
+                </button>
                 <button type="button" class="btn btn-secondary btn-sm margin-l-r"
                     onclick="goToUrl('http://github.com/anhaidgroup/deepmatcher/blob/master/Datasets.md')">Datasets
                     Info
@@ -82,11 +85,20 @@
             </div>
         </div>
 
+        
+        <div id="protected-container" style="display: none;">
+
+
+        </div>
+        <div id="protected-loader" class="loader" style="display:none"></div>
+        
         <div id="table-container">
 
 
         </div>
         <div id="table-loader" class="loader" style="display:none"></div>
+
+
         <hr>
         <form id="algoForm">
             <div class="form-check form-check-inline">

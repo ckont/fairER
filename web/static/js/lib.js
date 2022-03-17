@@ -36,6 +36,7 @@ function datasetOptions(option) {
 
 function clearTables() {
     $('#table-container').html(""); 
+    $('#protected-container').html("");
 }
 
 function tableBuilder(header, body) {

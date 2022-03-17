@@ -127,3 +127,27 @@ function getStatistics() {
         }
     });
 }
+
+function getCondition(){
+    var protected_container = $('#protected-container');
+    var protected_loader = $('#protected-loader');
+    var dataset = $('#dataset-val').val();
+    clearTables();
+    protected_loader.show();
+
+    $.ajax({
+        type: "GET",
+        url: "http://127.0.0.1:5000/requests/getProtectedCondition?dataset=" + getDatasetName(dataset),
+        contentType: "application/json",
+        dataType: 'text',
+        success: function (response) {
+            protected_loader.hide();
+            var obj = JSON.parse(response);
+            protected_container.show();
+            protected_container.html(obj.res);
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
