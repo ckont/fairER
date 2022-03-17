@@ -1,6 +1,6 @@
 from crypt import methods
 from matching import run_deepmatcher as dm
-import sys
+import sys, json
 import pandas as pd
 import os
 from fairsearchcore.models import FairScoreDoc
@@ -77,7 +77,13 @@ def run(data, data_path, train_file, valid_file, test_file, k_results):
     #print("\nclustering results:\n", clusters)
 
 
-
+    ####################################################
+    # Write clusters to json file
+    ####################################################
+    data = {'clusters': clusters}
+    json_string = json.dumps(data)
+    with open('web/data/json_data/clusters_data.json', 'w+') as outfile:
+        outfile.write(json_string)
 
     ###########################
     # Write preds to json file

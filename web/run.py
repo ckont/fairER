@@ -128,7 +128,26 @@ def getPreds():
     )
     return response
 
+###############################################################################
+# @parameters:                                                                #
+#          --dataset -> the dataset to get the clusters for                   #
+#          --arg -> run the specific algorithm to get the clusters            #
+###############################################################################
+@app.route('/requests/getClusters', methods=['GET'])
+def getClust():
+    alg = request.args.get('alg')
+    dataset = request.args.get('dataset')
+    explanation = request.args.get('explanation')
+    methods.runAlgorithm(alg, dataset, explanation)  
 
+    with open('data/json_data/clusters_data.json') as json_file:
+        data = json.load(json_file)
+
+    response = app.response_class(
+        response=str(data),
+        mimetype='application/json'
+    )
+    return response
 
     
 

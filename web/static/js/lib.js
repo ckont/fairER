@@ -15,12 +15,14 @@ function datasetOptions(option) {
     var select_dataset = $('#select-dataset');
     var evaluation_button = $('#evaluation-button');
     var preds_button = $('#preds-button');
+    var clusters_button = $('#clusters-button');
 
     if (option == "select") {
         upload_dataset.hide();
         select_dataset.show();
         evaluation_button.prop('disabled', false);
         preds_button.prop('disabled', false);
+        clusters_button.prop('disabled', false);
     }
     else {
         $('#table-container').html("");
@@ -28,6 +30,7 @@ function datasetOptions(option) {
         select_dataset.hide();
         evaluation_button.prop('disabled', true);
         preds_button.prop('disabled', true);
+        clusters_button.prop('disabled', true);
     }
 }
 
@@ -86,7 +89,7 @@ function downloadCSVFile(csv, filename) {
     download_link.click();
 }
 
-function predsToTable(jsonData) {
+function predsTableBuilder(jsonData) {
     str = "";
     i = 0;
     indexH = 0;
@@ -126,6 +129,24 @@ function predsToTable(jsonData) {
     }
     str = str.substring(0, str.length - 4);
     str += '</tbody></table>';
+
+    return str;
+}
+
+function clustersTableBuilder(header, body) {
+    str = tableInitPart;
+
+    for (var hVal of header)
+        str += '<th scope="col">' + hVal + '</th>'
+    str += '</tr></thead><tbody>'
+
+    for (index = 0; index < body.length; index++) {
+        str += "<tr>"
+        for (var bVal of body[index])
+            str += '<td>' + bVal + '</td>'
+        str += "</tr>"
+    }
+    str += '</tbody></table>'
 
     return str;
 }

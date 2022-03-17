@@ -56,8 +56,40 @@ function getPreds() {
             var obj = JSON.parse(response);
             var jsonData = eval(obj.preds);
 
-            htmlRes = predsToTable(jsonData);
+            htmlRes = predsTableBuilder(jsonData);
             table_container.html(htmlRes);
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+function getClusters() {
+    var table_container = $('#table-container');
+    var table_loader = $('#table-loader');
+    clearTables()
+    table_loader.show();
+    var dataset = $('#dataset-val').val();
+    alg = $("#algoForm input[type='radio']:checked").val()
+
+    $.ajax({
+        type: "GET",
+        url: "http://127.0.0.1:5000/requests/getClusters?alg=" + alg + "&dataset=" + getDatasetName(dataset),
+        contentType: "application/json",
+        dataType: 'text',
+        success: function (response) {
+            table_loader.hide();
+            let json_str = String(response).replace(/'/g, '"');
+            const obj = JSON.parse(json_str);
+
+            header = ["TableA", "TableB"];
+            var body = [];
+            for (var cluster of obj.clusters) {
+                body.push(cluster);
+            }
+            table_container.html(clustersTableBuilder(header, body));
+
         },
         error: function (error) {
             console.log(error);

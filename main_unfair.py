@@ -36,6 +36,14 @@ def run(data, data_path, train, valid, test, k_results):
     # print("\nclustering results:\n", original_clusters)
 
 
+    ####################################################
+    # Write clusters to json file
+    ####################################################
+    data = {'clusters': clusters}
+    json_string = json.dumps(data)
+    with open('web/data/json_data/clusters_data.json', 'w+') as outfile:
+        outfile.write(json_string)
+
     ###########################
     # Write preds to json file
     ###########################
