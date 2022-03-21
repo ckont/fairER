@@ -8,7 +8,7 @@ function getEval(arg) {
 
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/get" + arg + "?alg=" + alg + "&dataset=" + getDatasetName(dataset)+"&explanation=0",
+        url: "http://127.0.0.1:5000/requests/get" + arg + "?alg=" + alg + "&dataset=" + getDatasetName(dataset) + "&explanation=0",
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -44,11 +44,11 @@ function getPreds() {
     clearTables()
     table_loader.show();
     var dataset = $('#dataset-val').val()
-    arg = $("#algoForm input[type='radio']:checked").val()
+    alg = $("#algoForm input[type='radio']:checked").val()
 
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/getPreds?alg=" + arg + "&dataset=" + getDatasetName(dataset)+"&explanation=0",
+        url: "http://127.0.0.1:5000/requests/getPreds?alg=" + alg + "&dataset=" + getDatasetName(dataset) + "&explanation=0",
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -128,20 +128,15 @@ function getStatistics() {
     });
 }
 
-function getCondition(){
+function getCondition() {
     var protected_container = $('#protected-container');
-    var protected_loader = $('#protected-loader');
     var dataset = $('#dataset-val').val();
-    clearTables();
-    protected_loader.show();
-
     $.ajax({
         type: "GET",
         url: "http://127.0.0.1:5000/requests/getProtectedCondition?dataset=" + getDatasetName(dataset),
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
-            protected_loader.hide();
             var obj = JSON.parse(response);
             protected_container.show();
             protected_container.html(obj.res);
@@ -152,9 +147,7 @@ function getCondition(){
     });
 }
 
-
-
-function getPairFields(){
+function getPairFields() {
     var protected_container = $('#protected-container');
     var protected_loader = $('#protected-loader');
     var dataset = $('#dataset-val').val();
@@ -169,7 +162,7 @@ function getPairFields(){
         success: function (response) {
             protected_loader.hide();
             var obj1 = JSON.parse(response);
-            
+
 
             $.ajax({
                 type: "GET",
@@ -179,16 +172,16 @@ function getPairFields(){
                 success: function (response) {
                     protected_loader.hide();
                     var obj2 = JSON.parse(response);
-                    
+
                     protected_container.show();
-                    protected_container.html(pairAttributesToInput(obj1, obj2));                  
+                    protected_container.html(pairAttributesToInput(obj1, obj2));
                 },
                 error: function (error) {
                     console.log(error);
                 }
             });
 
-            
+
         },
         error: function (error) {
             console.log(error);
@@ -196,8 +189,7 @@ function getPairFields(){
     });
 }
 
-
-function getPairIsProtected(){
+function getPairIsProtected() {
     var protected_container = $('#protected-container');
     var protected_loader = $('#protected-loader');
     var dataset = $('#dataset-val').val()
@@ -206,7 +198,7 @@ function getPairIsProtected(){
     var str1 = '{ "right_table" : [';
 
     $("form#attr-form :input").each(function () {
-        if(leftOrRightTable($(this).attr('id'))== 'right')
+        if (leftOrRightTable($(this).attr('id')) == 'right')
             str1 += '{ "' + clearPrefix($(this).attr('id')) + '": "' + $(this).val() + '" },';
     });
     str1 = str1.slice(0, -1); //remove the last comma
@@ -215,7 +207,7 @@ function getPairIsProtected(){
     var str2 = '{ "left_table" : [';
 
     $("form#attr-form :input").each(function () {
-        if(leftOrRightTable($(this).attr('id'))== 'left')
+        if (leftOrRightTable($(this).attr('id')) == 'left')
             str2 += '{ "' + clearPrefix($(this).attr('id')) + '": "' + $(this).val() + '" },';
     });
     str2 = str2.slice(0, -1); //remove the last comma
@@ -233,7 +225,7 @@ function getPairIsProtected(){
         success: function (response) {
             protected_loader.hide();
             var obj = JSON.parse(response);
-            
+
             protected_container.html(obj.res);
         },
         error: function (error) {
@@ -255,15 +247,14 @@ function getTupleIsProtected() {
     });
     str = str.slice(0, -1); //remove the last comma
     str += ' ]}';
-
+    if(document.getElementById('rightOption').checked)
+        arg = 'right'
+    else
+        arg = 'left'
     clearTables();
     protected_loader.show();
 
-        
-    if ($('#right'))
-        arg = "right";
-    else
-        arg = "left";
+    
 
     $.ajax({
         type: "GET",
@@ -273,7 +264,7 @@ function getTupleIsProtected() {
         success: function (response) {
             protected_loader.hide();
             var obj = JSON.parse(response);
-            
+
             protected_container.html(obj.res);
         },
         error: function (error) {
@@ -284,7 +275,7 @@ function getTupleIsProtected() {
 }
 
 function getAttributes(arg) {
-    var protected_container = $('#protected-container');
+    var table_container = $('#table-container');
     var protected_loader = $('#protected-loader');
     //clearTables();
     protected_loader.show();
@@ -300,10 +291,30 @@ function getAttributes(arg) {
             var obj = JSON.parse(response);
 
             htmlRes = tupleAttributesToInput(obj, arg);
-            protected_container.html(htmlRes);
+            table_container.html(htmlRes);
         },
         error: function (error) {
             console.log(error);
         }
     });
 }
+
+function postProtectedCondition(dataset, condition) {
+    var protected_loader = $('#protected-loader');
+    clearTables();
+    protected_loader.show();
+    alert(condition)
+
+    $.ajax({
+        url: 'http://127.0.0.1:5000/requests/postProtectedCondition',
+        type: 'POST',
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify({'dataset': getDatasetName(dataset), 'condition' : condition}),
+        success: function (response) {
+            protected_loader.hide();
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}   

@@ -1,7 +1,9 @@
 from dbm.ndbm import library
 from flask import Flask, render_template, request, json
 import library.methods as methods
-
+import sys, os
+sys.path.append(os.path.abspath('../'))
+import util
 
 app = Flask(__name__)
 
@@ -186,7 +188,7 @@ def getStats():
 def getProtectedCondition():
     dataset = request.args.get('dataset')
 
-    result = methods.protectedCond(dataset)
+    result = util.pair_is_protected(None, dataset, True)
     response = app.response_class(
         response = json.dumps({'res': str(result)}),
         mimetype = 'application/json'
@@ -254,6 +256,23 @@ def getPairIsProtected():
 
     response = app.response_class(
         response = json.dumps({'res': str(pair_is_protected)}),
+        mimetype = 'application/json'
+    )
+    return response
+
+
+####################################################################################
+# @parameters:                                                                     #
+#          --dataset -> the dataset for which the protected condition will change  #  
+#          --condition -> the new condition                                        #
+####################################################################################
+@app.route("/requests/postProtectedCondition", methods=['POST'])
+def postProtectedCondition():
+    dataset = request.json['dataset']
+    condition = request.json['condition']
+    methods.saveNewCond(dataset, condition)
+    response = app.response_class(
+        response = json.dumps({'res': 'succeed'}),
         mimetype = 'application/json'
     )
     return response

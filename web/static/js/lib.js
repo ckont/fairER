@@ -106,7 +106,8 @@ function predsTableBuilder(jsonData) {
         body.push(item[1])
     });
     header = header.slice(0, i);
-    str = tableInitPart;
+    //str = tableInitPart;
+    str = '<table class="table" id="table"><thead><tr>'
 
     for (var hVal of header)
         str += '<th scope="col">' + hVal + '</th>'
@@ -168,17 +169,17 @@ function clearPrefix(str) {
 function leftOrRight() {
     clearTables();
     $('#protected-container').show();
-    str = '<p><b>Select left or right table: </b></p>' +
+    str = '<div id="left-right-option"><p><b>Select left or right table: </b></p>' +
         '<div class="form-check form-check-inline">' +
-        '<input class="form-check-input" type="radio"id="rightOption"' +
-        'onclick="getAttributes(\'right\')">' +
+        '<input class="form-check-input" type="radio" id="rightOption"' +
+        'onclick="getAttributes(\'right\')" >' +
         '<label class="form-check-label" for="rightOption">Right</label>' +
         '</div>' +
         '<div class="form-check form-check-inline">' +
         '<input class="form-check-input" type="radio" id="leftOption" ' +
-        '  onclick="getAttributes(\'left\')">' +
+        '  onclick="getAttributes(\'left\')" >' +
         '<label class="form-check-label" for="leftOption">Left</label>' +
-        '</div>' +
+        '</div></div>' +
         '<button type="button" class="btn btn-primary btn-sm margin-l-r" id="check-protected-button" style="display: none;"' +
         'onclick="getTupleIsProtected()">Check' +
         '</button>';
@@ -186,7 +187,7 @@ function leftOrRight() {
 }
 
 function tupleAttributesToInput(attr_list, arg) {
-    var htmlRes = '<form id="attr-form">';
+    var htmlRes = '<form id="attr-form" style="display: inline-block; justify-content: center;">';
 
 
     for (var value of attr_list) {
@@ -221,6 +222,49 @@ function pairAttributesToInput(obj1, obj2) {
     return htmlRes;
 }
 
-const tableInitPart = '<button type="button" class="btn btn-danger" onclick="clearTables();">Clear Table</button>' +
-    '<button type="button" class="btn btn-success" onclick="htmlToCSV();">Download as CSV</button>' +
+function getConditionField(){
+    getPreds();
+    var protected_container = $('#protected-container');
+    var dataset = $('#dataset-val').val(); 
+    $.ajax({
+        type: "GET",
+        url: "http://127.0.0.1:5000/requests/getProtectedCondition?dataset=" + getDatasetName(dataset),
+        contentType: "application/json",
+        dataType: 'text',
+        success: function (response) {
+            var obj = JSON.parse(response);
+            protected_container.show();
+            protected_container.html(conditionToInput(obj.res));
+            $('#cond').val(obj.res);
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+function changeProtectedCondition(){
+    var newCond = $('#newcond').val()
+    var dataset = $('#dataset-val').val(); 
+    postProtectedCondition(dataset ,newCond);
+    clearTables();
+    Swal.fire(
+        'Done!',
+        'New protected condition for dataset <b>'+getDatasetName(dataset)+'</b> is '+newCond+'!',
+        'success'
+    )
+}
+
+function conditionToInput(oldCond){
+    var htmlRes = '<div><p><b>Edit the Protected Condition:</b>&nbsp;</b></p>';
+    
+    htmlRes += '<form><br><br>';
+    htmlRes += '<textarea id="newcond" rows="3" cols="50">'+oldCond+'</textarea></form>';
+
+    htmlRes += '<br><button type="button" class="btn btn-success" onclick="changeProtectedCondition();">Change</button></div>';
+    return htmlRes;
+}   
+
+const tableInitPart = '<div id="clear-download"><button type="button" class="btn btn-danger" onclick="clearTables();">Clear Table</button>' +
+    '<button type="button" class="btn btn-success" onclick="htmlToCSV();">Download as CSV</button></div>' +
     '<br><br><table class="table" id="table"><thead><tr>';

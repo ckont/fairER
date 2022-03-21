@@ -3,6 +3,7 @@ import json
 import os
 import csv
 import sys
+import pickle
 from pathlib import Path
 sys.path.append(os.path.abspath('../'))
 import util
@@ -53,8 +54,31 @@ def getSPD(arg, dataset, explanation):
 
 
 def protectedCond(dataset):
-    return util.pair_is_protected(dataset=dataset, returnCond=True)
+    data = {}
+    pickle_path = 'data/pickle_data/protected_conditions.pkl'
+    curr_dir = os.path.split(os.getcwd())[1]
+    if curr_dir == 'fairER':
+        pickle_path = 'web/' + pickle_path
+    if os.path.exists(pickle_path) and os.path.getsize(pickle_path) > 0:
+        with open(pickle_path, 'rb') as pkl_file:
+            data = pickle.load(pkl_file)
 
+    condition = data.get(dataset)
+    return condition 
+
+
+def hasCustomCond(dataset):
+    data = {}
+    pickle_path = 'data/pickle_data/protected_conditions.pkl'
+    if os.path.exists(pickle_path) and os.path.getsize(pickle_path) > 0:
+        with open(pickle_path, 'rb') as pkl_file:
+            data = pickle.load(pkl_file)
+
+    condition = data.get(dataset)
+    if condition == None: 
+        return False
+    else:
+        return True
 
 def csv_to_json(csvFilePath, jsonFilePath):
     jsonArray = []
@@ -77,17 +101,23 @@ def csv_to_json(csvFilePath, jsonFilePath):
 def checkTupleProtected(dataset, arg, json_obj):
     key = []
     value = []
+    if arg == 'right':
+        otherSide = 'left'
+    else:
+        otherSide = 'right'
 
     for data in json_obj:
         key.append(arg + "_" + list(data.keys())[0])
         value.append(data.get(list(data.keys())[0]))
+        key.append(otherSide + "_" + list(data.keys())[0])
+        value.append('')
 
     df = pd.DataFrame(columns=key)
-    for i in range(len(json_obj)):
+    for i in range(len(json_obj)*2):
         this_column = df.columns[i]
         df[this_column] = [value[i]]
 
-    return util.tuple_is_protected(df, arg, dataset)
+    return util.pair_is_protected(df, dataset, False)
 
 
 def getAttributes(arg, dataset):
@@ -110,3 +140,60 @@ def getAttributes(arg, dataset):
 
         jsonString = json.dumps(list_of_column_names[0])
     return jsonString
+
+
+
+def saveNewCond(dataset, condition):
+    data = {}
+    pickle_path = 'data/pickle_data/protected_conditions.pkl'
+    curr_dir = os.path.split(os.getcwd())[1]
+    if curr_dir == 'fairER':
+        pickle_path = 'web/' + pickle_path
+
+    if os.path.exists(pickle_path) and os.path.getsize(pickle_path) > 0:
+        with open(pickle_path, 'rb') as pkl_file:
+            data = pickle.load(pkl_file)
+
+    data[dataset] = condition
+    with open(pickle_path, 'wb') as pkl_file:
+        pickle.dump(data, pkl_file, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def condInFile(dataset):
+    data = {}
+    pickle_path = 'data/pickle_data/protected_conditions.pkl'
+
+    curr_dir = os.path.split(os.getcwd())[1]
+    if curr_dir == 'fairER':
+        pickle_path = 'web/' + pickle_path
+    
+    if os.path.exists(pickle_path) and os.path.getsize(pickle_path) > 0:
+        with open(pickle_path, 'rb') as pkl_file:
+            data = pickle.load(pkl_file)
+            if dataset not in data:
+                return False
+            else:
+                return True
+    else:
+        return False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

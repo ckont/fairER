@@ -61,8 +61,11 @@ if __name__ == '__main__':
                 avg_score_nonprotected_matches += i.match_score
                 num_nonprotected_matches += 1
 
-    avg_score_protected /= num_protected
-    avg_score_nonprotected /= (len(preds)-num_protected)
+
+    if num_protected != 0:
+        avg_score_protected /= num_protected
+    if (len(preds)-num_protected) != 0:
+        avg_score_nonprotected /= (len(preds)-num_protected)
 
     ####################
     # PRINT STATISTICS #
