@@ -36,19 +36,11 @@ def run(data, data_path, train, valid, test, k_results):
     # print("\nclustering results:\n", original_clusters)
 
 
-    ####################################################
     # Write clusters to json file
-    ####################################################
-    data = {'clusters': clusters}
-    json_string = json.dumps(data)
-    with open('web/data/json_data/clusters_data.json', 'w+') as outfile:
-        outfile.write(json_string)
-
-    ###########################
+    methods.clusters_to_json(original_clusters) 
     # Write preds to json file
-    ###########################
-    methods.csv_to_json(data_path + '/dm_results.csv',
-                      'web/data/json_data/preds_data.json')
+    methods.preds_to_json(data_path)
+    
 
     return original_clusters, preds
 
@@ -90,10 +82,5 @@ if __name__ == '__main__':
     #print("EOD:", eod)
     #print()
 
-    ####################################################
-    # Write evaluation results to json file - MY code
-    ####################################################
-    data = {'accuracy': accuracy, 'SPD': spd, 'EOD': eod, 'time' : str(av_time / 10.0)}
-    json_string = json.dumps(data)
-    with open('web/data/json_data/evaluation_data.json', 'w+') as outfile:
-        outfile.write(json_string)
+    # Write evaluation results to json file
+    methods.eval_to_json(accuracy, spd, eod)

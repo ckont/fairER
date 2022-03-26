@@ -4,61 +4,182 @@ function getDatasetName(index) {
     return datasetName[parseInt(index)];
 }
 
-/* Open the specific URL in a new tab*/
-function goToUrl(url) {
-    window.open(url, '_blank');
+function editCondition(){  
+    getPredictions('fairER', 'general-container') //show predictions
+    var htmlRes =   '<div class="mb-3">'+
+                        '<label for="protected-textarea" class="form-label"><b>Edit Protected Condition</b></label>'+
+                        '<textarea class="form-control" id="protected-textarea" rows="3" cols="100"></textarea>'+
+                        '<br><button type="button" class="btn btn-success" onclick="postProtectedCondition()">Send</button>'+
+                    '</div>';
+    $('#protected-container').html(htmlRes)
+    getCondition('protected-textarea')
 }
 
-/* Perform some changes in the interface according to user's choice (select or upload dataset) */
-function datasetOptions(option) {
-    var upload_dataset = $('#upload-dataset');
-    var select_dataset = $('#select-dataset');
-    var evaluation_button = $('#evaluation-button');
-    var preds_button = $('#preds-button');
-    var clusters_button = $('#clusters-button');
 
-    if (option == "select") {
-        upload_dataset.hide();
-        select_dataset.show();
-        evaluation_button.prop('disabled', false);
-        preds_button.prop('disabled', false);
-        clusters_button.prop('disabled', false);
+/* Radio button (right or left) */
+function getTableOptions(){
+    $('#general-container').html('')
+    var htmlRes =   '<b>Select the table proper table:</b><div class="form-check">'+
+                        '<input class="form-check-input" type="radio" id="left-radio" onclick="getAttributes(\'left\')">'+
+                        '<label class="form-check-label" for="left-radio">Left</label>'+
+                    '</div>'+
+                    '<div class="form-check">'+
+                        '<input class="form-check-input" type="radio" id="right-radio" onclick="getAttributes(\'right\')">'+
+                        '<label class="form-check-label" for="right-radio">Right</label>'+
+                    '</div>';
+    $('#protected-container').html(htmlRes)
+}
+
+function tupleAttributesToInput(attr_list, table) {
+    var htmlRes = '</div> <form id="attr-form">';
+
+    for (var value of attr_list) {
+        htmlRes += '<div><label for="' + value + '" class="form-label"><b>' + value + '</b></label>';
+        htmlRes += '<input type="text" class="form-control" id="' + value + '"></div>';
     }
-    else {
-        $('#table-container').html("");
-        upload_dataset.show();
-        select_dataset.hide();
-        evaluation_button.prop('disabled', true);
-        preds_button.prop('disabled', true);
-        clusters_button.prop('disabled', true);
+
+    htmlRes += '<br><button type="button" class="btn btn-success" onclick="getTupleIsProtected(\''+table+'\')">Check</button></form>';
+    htmlRes +=  '<p id="or-keyword"><b>Or</b></p><div class="mb-3">'+
+                    '<label for="formFile" class="form-label"><b>Upload your json file</b></label>'+
+                    '<input class="form-control" type="file" id="formFile" accept=".json">'+
+                    '<button type="button" class="btn btn-link" onclick="json_tupple_info()">JSON file structure</button>'+
+                '</div>';
+    return htmlRes;
+}
+/* Message showing the right json structure to represent a tuple */
+function json_tupple_info(){
+    JSONsample =    '{ "<b>attributes</b>" : [ <br>{ "Beer_Name" : "Rocket City Red" },<br>'+
+                    '{ "Brew_Factory_Name" : "Tarraco Beer"},<br>'+
+                     '            ...          <br>'+
+                    '{ "AttributeN" : "valueN"} ] }'
+    Swal.fire('Example', JSONsample, 'info')
+}
+
+function pairAttributesToInput(right_obj, left_obj) {
+    var htmlRes = '<form id="attr-form"><br><h2>Right Table Attributes</h2><br>';
+
+    for (var value of right_obj) {
+        htmlRes += '<div><label for="right-' + value + '" class="form-label">' + value + '</label>';
+        htmlRes += '<input type="text" class="form-control" id="right-' + value + '"></div>';
     }
+
+    htmlRes += '<br></br><h2>Left Table Attributes</h2><br>'
+
+    for (var value of left_obj) {
+        htmlRes += '<div><label for="left-' + value + '" class="form-label">' + value + '</label>';
+        htmlRes += '<input type="text" class="form-control" id="left-' + value + '"></div>';
+    }
+
+    htmlRes += "<br><button type='button' class='btn btn-success' onclick='getPairIsProtected();'>Check</button></form>";
+    htmlRes +=  '<p id="or-keyword"><b>Or</b></p><div class="mb-3">'+
+                    '<label for="formFile" class="form-label"><b>Upload your json file</b></label>'+
+                    '<input class="form-control" type="file" id="formFile" accept=".json" multiple>'+
+                    '<button type="button" class="btn btn-link" onclick="json_pair_info()">JSON file structure</button>'+
+                '</div>';
+    return htmlRes;
+}
+/* Message showing the right json structure to represent a pair */
+function json_pair_info(){
+    JSONsample =    '{ "<b>right_table</b>" : <br>[ { "Beer_Name" : "Rocket City Red" },<br>'+
+                    '{ "Brew_Factory_Name" : "Tarraco Beer"},<br>'+
+                     '            ...          <br>'+
+                    '{ "RAttributeN" : "RvalueN"} ] }<br><br><b>and</b><br><br>'
+
+    JSONsample +=    '{ "<b>left_table</b>" : [ <br>{ "Beer_Name" : "Ruby Red American Ale" },<br>'+
+                    '{ "Brew_Factory_Name" : "Tarraco Beer"},<br>'+
+                     '            ...          <br>'+
+                    '{ "LAttributeM" : "LvalueM"} ] }<br>'
+    
+    Swal.fire('Example', JSONsample, 'info')
 }
 
-function clearTables() {
-    $('#table-container').html("");
-    $('#protected-container').html("");
-}
-
-function tableBuilder(header, body) {
-    str = tableInitPart;
+/* predictions json to html table */
+function predsTableBuilder(jsonData) {
+    preds_HTML_table = "";
+    i = 0;
+    indexH = 0;
+    var body = [];
+    var header = [];
+    var temp = [];
+    for (var value in jsonData) {
+        if (jsonData.hasOwnProperty(value)) {
+            Object.keys(jsonData[value]).forEach(function (key) {
+                header[indexH++] = key;
+                if (key == header[0])
+                    i = 0;
+                temp.push([i++, jsonData[value][key]]);
+            })
+        }
+    }
+    temp.forEach(function (item) {
+        body.push(item[1])
+    });
+    header = header.slice(0, i);
+    preds_HTML_table = '<table class="table" id="table"><caption style="caption-side:top" ><b>Predictions</b></caption><thead><tr>'
 
     for (var hVal of header)
-        str += '<th scope="col">' + hVal + '</th>'
-    str += '</tr></thead><tbody><tr>'
+        preds_HTML_table += '<th scope="col">' + hVal + '</th>'
+    preds_HTML_table += '</tr></thead><tbody><tr>'
+
+
+    counter = 0;
+    for (var bVal of body) {
+
+        preds_HTML_table += '<td>' + bVal + '</td>';
+        counter++;
+        if (counter == i) {
+            preds_HTML_table += "</tr><tr>";
+            counter = 0;
+        }
+    }
+    preds_HTML_table = preds_HTML_table.substring(0, preds_HTML_table.length - 4);
+    preds_HTML_table += '</tbody></table>';
+
+    return preds_HTML_table;
+}
+
+function getExplanation(){
+    if ($('input[type=checkbox][id=explanationSwitch]:checked').val())
+        return '1'
+    else 
+        return '0'
+}
+
+function clustersTableBuilder(header, body) {
+    clusters_HTML_table = '<table class="table" id="clusters-table"><caption style="caption-side:top" ><b>Clusters</b></caption><thead><tr>'
+    for (var hVal of header)
+        clusters_HTML_table += '<th scope="col">' + hVal + '</th>'
+    clusters_HTML_table += '</tr></thead><tbody>'
+
+    for (index = 0; index < body.length; index++) {
+        clusters_HTML_table += "<tr>"
+        for (var bVal of body[index])
+            clusters_HTML_table += '<td>' + bVal + '</td>'
+        clusters_HTML_table += "</tr>"
+    }
+    clusters_HTML_table += '</tbody></table>'
+    return clusters_HTML_table;
+}
+
+function tableBuilder(header, body, id) {
+    table = '<table class="table" id="'+id+'"><thead><tr>';
+
+    for (var hVal of header)
+    table += '<th scope="col">' + hVal + '</th>'
+    table += '</tr></thead><tbody><tr>'
 
     for (var bVal of body)
-        str += '<td>' + bVal + '</td>'
-    str += '</tr></tbody></table>'
+        table += '<td>' + bVal + '</td>'
+    table += '</tr></tbody></table>'
 
-    return str;
+    return table;
 }
 
 
-function htmlToCSV(filename) {
+function html_table_to_csv(filename) {
     if (filename == null)
         filename = "output";
     filename += ".csv";
-
 
     var data = [];
     var rows = document.querySelectorAll("table tr");
@@ -73,7 +194,6 @@ function htmlToCSV(filename) {
     downloadCSVFile(data.join("\n"), filename);
 }
 
-
 function downloadCSVFile(csv, filename) {
     var csv_file, download_link;
     csv_file = new Blob([csv], { type: "text/csv" });
@@ -85,72 +205,10 @@ function downloadCSVFile(csv, filename) {
     download_link.click();
 }
 
-function predsTableBuilder(jsonData) {
-    str = "";
-    i = 0;
-    indexH = 0;
-    var body = [];
-    var header = [];
-    var temp = [];
-    for (var k in jsonData) {
-        if (jsonData.hasOwnProperty(k)) {
-            Object.keys(jsonData[k]).forEach(function (key) {
-                header[indexH++] = key;
-                if (key == header[0])
-                    i = 0;
-                temp.push([i++, jsonData[k][key]]);
-            })
-        }
-    }
-    temp.forEach(function (item) {
-        body.push(item[1])
-    });
-    header = header.slice(0, i);
-    //str = tableInitPart;
-    str = '<table class="table" id="table"><thead><tr>'
-
-    for (var hVal of header)
-        str += '<th scope="col">' + hVal + '</th>'
-    str += '</tr></thead><tbody><tr>'
-
-
-    counter = 0;
-    for (var bVal of body) {
-
-        str += '<td>' + bVal + '</td>';
-        counter++;
-        if (counter == i) {
-            str += "</tr><tr>";
-            counter = 0;
-        }
-    }
-    str = str.substring(0, str.length - 4);
-    str += '</tbody></table>';
-
-    return str;
-}
-
-function clustersTableBuilder(header, body) {
-    str = tableInitPart;
-
-    for (var hVal of header)
-        str += '<th scope="col">' + hVal + '</th>'
-    str += '</tr></thead><tbody>'
-
-    for (index = 0; index < body.length; index++) {
-        str += "<tr>"
-        for (var bVal of body[index])
-            str += '<td>' + bVal + '</td>'
-        str += "</tr>"
-    }
-    str += '</tbody></table>'
-
-    return str;
-}
 
 /* Return 'right' if the param string begins with the word "right"
    otherwise return 'left' */
-function leftOrRightTable(str) {
+function attr_prefix(str) {
     var temp = str.substring(0, 5);
     if (temp == 'right')
         return temp;
@@ -159,112 +217,8 @@ function leftOrRightTable(str) {
 }
 
 function clearPrefix(str) {
-    if (leftOrRightTable(str) == 'right')
+    if (attr_prefix(str) == 'right')
         return str.substring(6);
     else
         return str.substring(5);
 }
-
-
-function leftOrRight() {
-    clearTables();
-    $('#protected-container').show();
-    str = '<div id="left-right-option"><p><b>Select left or right table: </b></p>' +
-        '<div class="form-check form-check-inline">' +
-        '<input class="form-check-input" type="radio" id="rightOption"' +
-        'onclick="getAttributes(\'right\')" >' +
-        '<label class="form-check-label" for="rightOption">Right</label>' +
-        '</div>' +
-        '<div class="form-check form-check-inline">' +
-        '<input class="form-check-input" type="radio" id="leftOption" ' +
-        '  onclick="getAttributes(\'left\')" >' +
-        '<label class="form-check-label" for="leftOption">Left</label>' +
-        '</div></div>' +
-        '<button type="button" class="btn btn-primary btn-sm margin-l-r" id="check-protected-button" style="display: none;"' +
-        'onclick="getTupleIsProtected()">Check' +
-        '</button>';
-    $('#protected-container').html(str);
-}
-
-function tupleAttributesToInput(attr_list, arg) {
-    var htmlRes = '<form id="attr-form" style="display: inline-block; justify-content: center;">';
-
-
-    for (var value of attr_list) {
-        htmlRes += '<div><label for="' + value + '" class="form-label">' + value + '</label>';
-        htmlRes += '<input type="text" class="form-control" id="' + value + '"></div>';
-    }
-
-    htmlRes += "</form><p id='" + arg + "'></p>";
-    htmlRes += "<div class='break'></div><button type='button' class='btn btn-success' onclick='getTupleIsProtected();'>Check</button>";
-    return htmlRes;
-}
-
-
-function pairAttributesToInput(obj1, obj2) {
-    var htmlRes = '<form id="attr-form"><br><h2>Right Table Attributes</h2><br>';
-
-
-    for (var value of obj1) {
-        htmlRes += '<div><label for="right-' + value + '" class="form-label">' + value + '</label>';
-        htmlRes += '<input type="text" class="form-control" id="right-' + value + '"></div>';
-    }
-
-    htmlRes += '<br></br><h2>Left Table Attributes</h2><br>'
-
-    for (var value of obj2) {
-        htmlRes += '<div><label for="left-' + value + '" class="form-label">' + value + '</label>';
-        htmlRes += '<input type="text" class="form-control" id="left-' + value + '"></div>';
-    }
-
-    htmlRes += "</form>";
-    htmlRes += "<div class='break'></div><button type='button' class='btn btn-success' onclick='getPairIsProtected();'>Check</button>";
-    return htmlRes;
-}
-
-function getConditionField(){
-    getPreds();
-    var protected_container = $('#protected-container');
-    var dataset = $('#dataset-val').val(); 
-    $.ajax({
-        type: "GET",
-        url: "http://127.0.0.1:5000/requests/getProtectedCondition?dataset=" + getDatasetName(dataset),
-        contentType: "application/json",
-        dataType: 'text',
-        success: function (response) {
-            var obj = JSON.parse(response);
-            protected_container.show();
-            protected_container.html(conditionToInput(obj.res));
-            $('#cond').val(obj.res);
-        },
-        error: function (error) {
-            console.log(error);
-        }
-    });
-}
-
-function changeProtectedCondition(){
-    var newCond = $('#newcond').val()
-    var dataset = $('#dataset-val').val(); 
-    postProtectedCondition(dataset ,newCond);
-    clearTables();
-    Swal.fire(
-        'Done!',
-        'New protected condition for dataset <b>'+getDatasetName(dataset)+'</b> is '+newCond+'!',
-        'success'
-    )
-}
-
-function conditionToInput(oldCond){
-    var htmlRes = '<div><p><b>Edit the Protected Condition:</b>&nbsp;</b></p>';
-    
-    htmlRes += '<form><br><br>';
-    htmlRes += '<textarea id="newcond" rows="3" cols="50">'+oldCond+'</textarea></form>';
-
-    htmlRes += '<br><button type="button" class="btn btn-success" onclick="changeProtectedCondition();">Change</button></div>';
-    return htmlRes;
-}   
-
-const tableInitPart = '<div id="clear-download"><button type="button" class="btn btn-danger" onclick="clearTables();">Clear Table</button>' +
-    '<button type="button" class="btn btn-success" onclick="htmlToCSV();">Download as CSV</button></div>' +
-    '<br><br><table class="table" id="table"><thead><tr>';

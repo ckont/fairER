@@ -5,24 +5,18 @@
     <title>Requests - ResponsibleER</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 
-    <script type="text/javascript" src="{{ url_for('static', filename='js/lib.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/requests.js') }}"></script>
     <link href="{{ url_for('static', filename='stylesheets/styles.css') }}" rel="stylesheet">
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
 </head>
 
 <body>
-
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">ResponsibleER</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -32,130 +26,180 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">Home </a>
+                        <a class="nav-link" href="/">Home</a>
                     </li>
                     <li class="nav-item active">
                         <a class="nav-link" href="/requests">Requests</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/info">API info</a>
+                        <a class="nav-link" href="/api/info">API Info</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://isl.ics.forth.gr/ResponsibleER/" target="_blank">About</a>
                     </li>
             </div>
         </div>
     </nav>
-
-    <div class="container-fluid text-center">
-        <div class="select-dataset-container">
-            <hr>
-            <p><b>Select a Dataset from our list or upload a dataset of your choice.</b></p>
-            <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"
-                    onclick="datasetOptions('select')">
-                <label class="form-check-label" for="inlineRadio1">Select a Dataset</label>
-            </div>
-            <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"
-                    onclick="datasetOptions('upload')">
-                <label class="form-check-label" for="inlineRadio2">Upload your Dataset</label>
-            </div>
-
-
-            <div id="select-dataset" style="display:none">
-                <select class="form-select margin-l-r" id="dataset-val">
-                    <option value="0" selected>BeerAdvo-RateBeer</option>
-                    <option value="1">iTunes-Amazon</option>
-                    <option value="2">Fodors-Zagats</option>
-                    <option value="3">DBLP-ACM</option>
-                    <option value="4">DBLP-Scholar</option>
-                    <option value="5">Amazon-Google</option>
-                    <option value="6">Walmart-Amazon</option>
-                </select>
-                <button type="button" class="btn btn-primary btn-sm margin-l-r" onclick="getStatistics()">Dataset
-                    Statistics
-                </button>
-                <button type="button" class="btn btn-primary btn-sm margin-l-r" onclick="getCondition()">Get "Protected"
-                    Condition
-                </button>
-                <button type="button" class="btn btn-primary btn-sm margin-l-r" onclick="getConditionField()">Change
-                    "Protected" Condition
-                </button>
-                <button type="button" class="btn btn-primary btn-sm margin-l-r" onclick="leftOrRight()">Tuple is
-                    Protected
-                </button>
-                <button type="button" class="btn btn-primary btn-sm margin-l-r" onclick="getPairFields()">Pair is
-                    Protected
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm margin-l-r"
-                    onclick="goToUrl('http://github.com/anhaidgroup/deepmatcher/blob/master/Datasets.md')">Datasets
-                    Info
-                </button>
-            </div>
-            <div id="upload-dataset" style="display:none">
-                <p style="color: red; margin-top: 1%;">Not available!</p>
-            </div>
-        </div>
-
-
-        <div id="protected-container" style="display: none;">
-
+    <div class="requests-main-container container">
+        <div class="container-fluid" id="datasets-container">
+            <p><b>Select a Dataset</b></p>
+            <select class="form-select" id="dataset-val">
+                <option value="0" selected>BeerAdvo-RateBeer</option>
+                <option value="1">iTunes-Amazon</option>
+                <option value="2">Fodors-Zagats</option>
+                <option value="3">DBLP-ACM</option>
+                <option value="4">DBLP-Scholar</option>
+                <option value="5">Amazon-Google</option>
+                <option value="6">Walmart-Amazon</option>
+            </select>
 
         </div>
-        <div id="protected-loader" class="loader" style="display:none"></div>
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="FairER-tab" data-bs-toggle="tab" data-bs-target="#FairER"
+                    type="button" role="tab" aria-selected="true">FairER</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="Unfair-tab" data-bs-toggle="tab" data-bs-target="#Unfair" type="button"
+                    role="tab" aria-selected="false">Unfair</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="protected-tuples-tab" data-bs-toggle="tab"
+                    data-bs-target="#protected-tuples" type="button" role="tab" aria-selected="false">Protected
+                    Tuples</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="dataset-statistics-tab" data-bs-toggle="tab" data-bs-target="#dataset-statistics"
+                    type="button" role="tab" aria-selected="false">Dataset Statistics</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="upload-dataset-tab" data-bs-toggle="tab" data-bs-target="#upload-dataset"
+                    type="button" role="tab" aria-selected="false">Upload Dataset</button>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="FairER" role="tabpanel" aria-labelledby="FairER-tab">
+                <div class="container fairER-container">
+                    <div class="row form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="explanationSwitch" />
+                        <label class="form-check-label" for="explanationSwitch">Explanation</label>
+                    </div>
+                    <div class="btn-group container" role="group">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Evaluation Results
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            <li><a class="dropdown-item"
+                                    onclick="getEvaluation('fairER', 'EvaluationResults', 'fairer-container')">All</a>
+                            </li>
+                            <li><a class="dropdown-item"
+                                    onclick="getEvaluation('fairER', 'Accuracy', 'fairer-container')">Accuracy</a></li>
+                            <li><a class="dropdown-item"
+                                    onclick="getEvaluation('fairER', 'SPD', 'fairer-container')">SPD</a></li>
+                            <li><a class="dropdown-item"
+                                    onclick="getEvaluation('fairER', 'EOD', 'fairer-container')">EOD</a></li>
+                        </ul>
+                        <button type="button" class="btn btn-secondary"
+                            onclick="getClusters('fairER', 'fairer-container')">Get
+                            Clusters</button>
+                        <button type="button" class="btn btn-secondary"
+                            onclick="getPredictions('fairER', 'fairer-container')">Get
+                            Predictions</button>
+                    </div>
+                    <div id="fairer-container">
 
-        <div id="table-container">
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="Unfair" role="tabpanel" aria-labelledby="Unfair-tab">
+                <div class="container btn-group" role="group">
+                    <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Evaluation Results
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                        <li><a class="dropdown-item"
+                                onclick="getEvaluation('unfair', 'EvaluationResults', 'unfair-container')">All</a></li>
+                        <li><a class="dropdown-item"
+                                onclick="getEvaluation('unfair', 'Accuracy', 'unfair-container')">Accuracy</a></li>
+                        <li><a class="dropdown-item"
+                                onclick="getEvaluation('unfair', 'SPD', 'unfair-container')">SPD</a></li>
+                        <li><a class="dropdown-item"
+                                onclick="getEvaluation('unfair', 'EOD', 'unfair-container')">EOD</a></li>
+                    </ul>
+                    <button type="button" class="btn btn-secondary"
+                        onclick="getClusters('unfair', 'unfair-container')">Get
+                        Clusters</button>
+                    <button type="button" class="btn btn-secondary"
+                        onclick="getPredictions('unfair', 'unfair-container')">Get
+                        Predictions</button>
+                </div>
+                <div id="unfair-container">
 
+                </div>
+            </div>
+            <div class="tab-pane fade" id="protected-tuples" role="tabpanel" aria-labelledby="protected-tuples-tab">
+                <div class="btn-group container" role="group">
+                    <button type="button" class="btn btn-secondary" onclick="getCondition('protected-container')">Get
+                        Condition</button>
+                    <button type="button" class="btn btn-secondary" onclick="editCondition()">Edit Condition</button>
+                    <button type="button" class="btn btn-secondary" onclick="getTableOptions()">Tuple is
+                        Protected</button>
+                    <button type="button" class="btn btn-secondary" onclick="getPairFields()">Pair is Protected</button>
+                </div>
+                <div id="protected-container">
 
+                </div>
+                <div id="general-container">
+
+                </div>
+            </div>
+            <div class="tab-pane fade" id="dataset-statistics" role="tabpanel" aria-labelledby="dataset-statistics-tab">
+                <div class="btn-group container" role="group">
+                    <button type="button" class="btn btn-secondary" onclick="getStatistics()">Get Statistics</button>
+                </div>
+                <div id="statistics-container">
+
+                </div>
+            </div>
+            <div class="tab-pane fade container" id="upload-dataset" role="tabpanel"
+                aria-labelledby="upload-dataset-tab">
+                <div id="upload-instructions">
+                    <p><b>Instructions to upload your dataset</b></p>
+                    <ol>
+                        <li>The dataset should be a zip file</li>
+                        <li>The zip file name will be the name of the dataset</li>
+                        <li>The zip file should contain the following (5) files
+                            <ul>
+                                <li>tableA.csv</li>
+                                <li>tableB.csv</li>
+                                <li>test.csv</li>
+                                <li>valid.csv</li>
+                                <li>train.csv</li>
+                            </ul>
+                        </li>
+                        <li>Each file should be structured <a
+                                href="https://github.com/anhaidgroup/deepmatcher/blob/master/Datasets.md"
+                                target="_blank">Deepmatcher Datasets</a></li>
+                        <li>Once you upload your dataset, you will be able to select it on the dataset selection
+                            dropdown</li>
+                    </ol>
+                </div>
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Upload your dataset</label>
+                    <input class="form-control" type="file" id="formFile" accept=".zip">
+                </div>
+            </div>
         </div>
-        <div id="table-loader" class="loader" style="display:none"></div>
-
-
-        <hr>
-        <form id="algoForm">
-            <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" id="faireroption" name="inlineRadioOptions" value="fairER"
-                    checked>
-                <label class="form-check-label" for="faireroption">FairER</label>
-            </div>
-            <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" id="fairoption" name="inlineRadioOptions" value="fair"
-                    disabled>
-                <label class="form-check-label" for="fairoption">Fair</label>
-            </div>
-            <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" id="unfairoption" name="inlineRadioOptions" value="unfair">
-                <label class="form-check-label" for="unfairoption">Unfair</label>
-            </div>
-        </form>
-
-
-        <div class="buttons-container">
-            <div class="dropdown margin-l-r">
-                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="evaluation-button"
-                    data-bs-toggle="dropdown" aria-expanded="false" disabled>
-                    Get Evaluation Results
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" onclick="getEval('EvaluationResults')">All</a></li>
-                    <li><a class="dropdown-item" onclick="getEval('Accuracy')">Accuracy</a></li>
-                    <li><a class="dropdown-item" onclick="getEval('SPD')">SPD</a></li>
-                    <li><a class="dropdown-item" onclick="getEval('EOD')">EOD</a></li>
-                </ul>
-            </div>
-            <button type="button" class="btn btn-primary btn-sm margin-l-r" id="preds-button" onclick="getPreds()"
-                disabled>Get
-                Preds
-            </button>
-            <button type="button" class="btn btn-primary btn-sm margin-l-r" id="clusters-button" onclick="getClusters()"
-                disabled>Get Clusters
-            </button>
-        </div>
-
     </div>
-
-    <footer class="container-fluid text-center">
-
-    </footer>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/lib.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/requests.js') }}"></script>
 </body>
 
 </html>

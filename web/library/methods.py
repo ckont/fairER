@@ -25,13 +25,6 @@ def runStatistics(dataset):
     os.chdir(cur_dir)
 
 
-def stringToBool(arg):
-    if arg == '0':
-        return False
-    else:
-        return True
-
-
 def getAccuracy(algo, dataset, explanation):
     runAlgorithm(algo, dataset, explanation)
     with open('data/json_data/evaluation_data.json') as json_file:
@@ -105,6 +98,7 @@ def checkTupleProtected(dataset, arg, json_obj):
         otherSide = 'left'
     else:
         otherSide = 'right'
+    print(arg)
 
     for data in json_obj:
         key.append(arg + "_" + list(data.keys())[0])
@@ -120,9 +114,9 @@ def checkTupleProtected(dataset, arg, json_obj):
     return util.pair_is_protected(df, dataset, False)
 
 
-def getAttributes(arg, dataset):
+def getAttributes(table, dataset):
 
-    if arg == 'right':
+    if table == 'right':
         file = 'tableA.csv'
     else:
         file = 'tableB.csv'
@@ -178,22 +172,35 @@ def condInFile(dataset):
         return False
 
 
+def deleteCachedData(dataset):
+    path = Path(os.getcwd())
+    parent_path = Path(os.getcwd()).parent.absolute()
+    os.chdir(parent_path)
+    best_model_path = Path('resources','DeepMatcherDatasets',dataset, 'best_model.pth')
+    cached_data_path = Path('resources','DeepMatcherDatasets',dataset, 'cacheddata.pth')
+    dm_results_path = Path('resources','DeepMatcherDatasets',dataset, 'dm_results.csv')
+
+    if os.path.exists(best_model_path):
+        os.remove(best_model_path)
+    if os.path.exists(cached_data_path):
+        os.remove(cached_data_path)
+    if os.path.exists(dm_results_path):
+        os.remove(dm_results_path)
+    
+    os.chdir(path)
 
 
+def eval_to_json(accuracy, spd, eod):
+    data = {'accuracy': accuracy, 'SPD': spd, 'EOD': eod}
+    json_string = json.dumps(data)
+    with open('web/data/json_data/evaluation_data.json', 'w+') as outfile:
+        outfile.write(json_string)
 
+def clusters_to_json(clusters):
+    data = {'clusters': clusters}
+    json_string = json.dumps(data)
+    with open('web/data/json_data/clusters_data.json', 'w+') as outfile:
+        outfile.write(json_string)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+def preds_to_json(data_path):
+    csv_to_json(data_path + '/dm_results.csv', 'web/data/json_data/preds_data.json')

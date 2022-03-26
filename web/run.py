@@ -1,4 +1,4 @@
-from dbm.ndbm import library
+from pathlib import Path
 from flask import Flask, render_template, request, json
 import library.methods as methods
 import sys, os
@@ -200,13 +200,13 @@ def getProtectedCondition():
 ###############################################################
 # @parameters:                                                #
 #          --dataset -> the dataset to get the attributes for #
-#          --arg -> left or right table                       #
+#          --table -> left or right table                     #
 ###############################################################
 @app.route("/requests/getTableAttributes")
 def getTablesAttributes():
     dataset = request.args.get('dataset')
-    arg = request.args.get('arg')
-    attributes_json = methods.getAttributes(arg, dataset)
+    table = request.args.get('table')
+    attributes_json = methods.getAttributes(table, dataset)
     
     response = app.response_class(
         response=attributes_json,
@@ -224,12 +224,12 @@ def getTablesAttributes():
 @app.route("/requests/getTupleIsProtected")
 def getTupleIsProtected():
     dataset = request.args.get('dataset')
-    arg = request.args.get('arg')
+    table = request.args.get('table')
     json_str = request.args.get('json')
     #attributes_json = mylib.getAttributes(arg, dataset)
 
     json_obj = json.loads(json_str)
-    result = methods.checkTupleProtected(dataset, arg, json_obj["attributes"])
+    result = methods.checkTupleProtected(dataset, table, json_obj["attributes"])
     response = app.response_class(
         response = json.dumps({'res': str(result)}),
         mimetype = 'application/json'
@@ -271,6 +271,7 @@ def postProtectedCondition():
     dataset = request.json['dataset']
     condition = request.json['condition']
     methods.saveNewCond(dataset, condition)
+    methods.deleteCachedData(dataset)
     response = app.response_class(
         response = json.dumps({'res': 'succeed'}),
         mimetype = 'application/json'
