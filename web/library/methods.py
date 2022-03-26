@@ -248,3 +248,22 @@ def delete_dataset_zip(filename):
     path = os.path.join('data', 'uploads', 'datasets',filename)
     if os.path.exists(path):
         os.remove(path)
+
+def datasets_names_to_json():
+    list1 = []
+    list2 = []
+    cur_dir = os.path.abspath(".")
+    parent_dir = Path(os.getcwd()).parent.absolute()
+    os.chdir(parent_dir)
+    rootdir = os.path.join('resources', 'DeepMatcherDatasets')
+    for path in Path(rootdir).iterdir():
+        if path.is_dir():
+            list1.append(os.path.basename(path))
+
+    rootdir = os.path.join('resources', 'OtherDatasets')
+    for path in Path(rootdir).iterdir():
+        if path.is_dir():
+            list2.append(os.path.basename(path))
+    
+    os.chdir(cur_dir)
+    return list1 + list2

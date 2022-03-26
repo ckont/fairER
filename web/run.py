@@ -289,12 +289,12 @@ def allowed_file(filename):
 @app.route("/requests/uploadDataset", methods=['POST'])
 def uploadDataset():
     # check if the post request has the file part
-    if 'file' not in request.files:
+    if 'dataset-upload-file' not in request.files:
         response = app.response_class(
             response = json.dumps({'res': 'nofile'}),
             mimetype = 'application/json'
         )
-    file = request.files['file']
+    file = request.files['dataset-upload-file']
     # If the user does not select a file, the browser submits an
     # empty file without a filename.
     if file.filename == '':
@@ -325,6 +325,16 @@ def uploadDataset():
     
     return response
 
+
+
+@app.route("/requests/getDatasetsNames", methods=['GET'])
+def getDatasetsNames():
+    data_names_json = methods.datasets_names_to_json()
+    response = app.response_class(
+        response = json.dumps({'res': sorted(data_names_json)}),
+        mimetype = 'application/json'
+    )
+    return response
 
 
 

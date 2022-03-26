@@ -1,9 +1,3 @@
-function getDatasetName(index) {
-    const datasetName = ["Beer", "iTunes-Amazon", "Fodors-Zagats",
-        "DBLP-ACM", "DBLP-GoogleScholar", "Amazon-Google", "Walmart-Amazon"];
-    return datasetName[parseInt(index)];
-}
-
 function editCondition(){  
     getPredictions('fairER', 'general-container') //show predictions
     var htmlRes =   '<div class="mb-3">'+
