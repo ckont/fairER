@@ -5,10 +5,10 @@ function postProtectedCondition() {
         url: 'http://127.0.0.1:5000/requests/postProtectedCondition',
         type: 'POST',
         contentType: "application/json; charset=utf-8",
-        data: JSON.stringify({'dataset': getDatasetName(dataset), 'condition' : condition}),
+        data: JSON.stringify({ 'dataset': getDatasetName(dataset), 'condition': condition }),
         success: function () {
-            
-            
+
+
             Swal.fire({
                 position: 'center',
                 icon: 'success',
@@ -22,7 +22,7 @@ function postProtectedCondition() {
             console.log(error);
         }
     });
-}   
+}
 
 function getCondition(container_id) {
     var dataset = $('#dataset-val').val();
@@ -33,10 +33,10 @@ function getCondition(container_id) {
         dataType: 'text',
         success: function (response) {
             var obj = JSON.parse(response);
-            if(container_id != null)
-                $('#'+container_id).html(obj.res)
+            if (container_id != null)
+                $('#' + container_id).html(obj.res)
             else
-                return obj.res;      
+                return obj.res;
         },
         error: function (error) {
             console.log(error);
@@ -47,7 +47,7 @@ function getCondition(container_id) {
 
 function getAttributes(table) {
     var dataset = $('#dataset-val').val()
-    
+
     $.ajax({
         type: "GET",
         url: "http://127.0.0.1:5000/requests/getTableAttributes?dataset=" + getDatasetName(dataset) + "&table=" + table,
@@ -56,7 +56,7 @@ function getAttributes(table) {
         success: function (response) {
             var obj = JSON.parse(response);
             htmlRes = tupleAttributesToInput(obj, table);
-            $('#protected-container').css('text-align','center')
+            $('#protected-container').css('text-align', 'center')
             $('#protected-container').html(htmlRes);
         },
         error: function (error) {
@@ -82,7 +82,7 @@ function getTupleIsProtected(table) {
         dataType: 'text',
         success: function (response) {
             var obj = JSON.parse(response);
-            if(obj.res == 'True')
+            if (obj.res == 'True')
                 $('#protected-container').html('<b>Tuple is protected!</b>');
             else
                 $('#protected-container').html('<b>Tuple is not protected!</b>');
@@ -148,7 +148,7 @@ function getPairIsProtected() {
     });
     str2 = str2.slice(0, -1); //remove the last comma
     str2 += ' ]}';
-    
+
 
     $.ajax({
         type: "GET",
@@ -158,7 +158,7 @@ function getPairIsProtected() {
         success: function (response) {
             var obj = JSON.parse(response);
 
-            if(obj.res == 'True')
+            if (obj.res == 'True')
                 $('#protected-container').html('<b>Pair is protected!</b>');
             else
                 $('#protected-container').html('<b>Pair is not protected!</b>');
@@ -171,7 +171,7 @@ function getPairIsProtected() {
 
 function getPredictions(alg, container_id) {
     var dataset = $('#dataset-val').val()
-    $('#'+container_id).html('<div class="loader"></div>') 
+    $('#' + container_id).html('<div class="loader"></div>')
     $.ajax({
         type: "GET",
         url: "http://127.0.0.1:5000/requests/getPreds?alg=" + alg + "&dataset=" + getDatasetName(dataset) + "&explanation=" + getExplanation(),
@@ -181,7 +181,7 @@ function getPredictions(alg, container_id) {
             var obj = JSON.parse(response);
             var jsonData = eval(obj.preds);
             htmlRes = predsTableBuilder(jsonData);
-            $('#'+container_id).html(htmlRes);
+            $('#' + container_id).html(htmlRes);
         },
         error: function (error) {
             console.log(error);
@@ -191,7 +191,7 @@ function getPredictions(alg, container_id) {
 
 function getClusters(alg, container_id) {
     var dataset = $('#dataset-val').val();
-    $('#'+container_id).html('<div class="loader"></div>') 
+    $('#' + container_id).html('<div class="loader"></div>')
     $.ajax({
         type: "GET",
         url: "http://127.0.0.1:5000/requests/getClusters?alg=" + alg + "&dataset=" + getDatasetName(dataset) + "&explanation=" + getExplanation(),
@@ -206,7 +206,7 @@ function getClusters(alg, container_id) {
             for (var cluster of obj.clusters) {
                 body.push(cluster);
             }
-            $('#'+container_id).html(clustersTableBuilder(header, body));
+            $('#' + container_id).html(clustersTableBuilder(header, body));
 
         },
         error: function (error) {
@@ -216,11 +216,11 @@ function getClusters(alg, container_id) {
 }
 
 function getEvaluation(alg, arg, container_id) {
-    $('#'+container_id).html('<div class="loader"></div>') 
+    $('#' + container_id).html('<div class="loader"></div>')
     var dataset = $('#dataset-val').val()
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/get" + arg + "?alg=" + alg + "&dataset=" + getDatasetName(dataset) + "&explanation="+getExplanation(),
+        url: "http://127.0.0.1:5000/requests/get" + arg + "?alg=" + alg + "&dataset=" + getDatasetName(dataset) + "&explanation=" + getExplanation(),
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -230,7 +230,7 @@ function getEvaluation(alg, arg, container_id) {
                 header = ["Dataset", "Algorithm", "Accuracy", "SPD", "EOD"];
             else
                 header = ["Dataset", "Algorithm", arg];
-            
+
             if (arg == "Accuracy")
                 body = [getDatasetName(dataset), alg, obj.accuracy];
             else if (arg == "SPD")
@@ -241,7 +241,7 @@ function getEvaluation(alg, arg, container_id) {
                 body = [getDatasetName(dataset), alg, obj.accuracy, obj.spd, obj.eod];
 
             htmlRes = tableBuilder(header, body, 'eval-table');
-            $('#'+container_id).html(htmlRes);
+            $('#' + container_id).html(htmlRes);
         },
         error: function (error) {
             console.log(error);
@@ -250,7 +250,7 @@ function getEvaluation(alg, arg, container_id) {
 }
 
 function getStatistics() {
-    $('#statistics-container').html('<div class="loader"></div>') 
+    $('#statistics-container').html('<div class="loader"></div>')
     var dataset = $('#dataset-val').val()
 
     $.ajax({
@@ -271,6 +271,36 @@ function getStatistics() {
         },
         error: function (error) {
             console.log(error);
+        }
+    });
+}
+
+function uploadDataset() {
+    var form_data = new FormData($('#dataset-upload-form')[0]);
+    if(form_data.get("dataset-upload-file")["name"].length == 0){
+        pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
+        return;
+    }
+    $.ajax({
+        type: 'POST',
+        url: 'http://127.0.0.1:5000/requests/uploadDataset',
+        processData: false,
+        contentType: false,
+        async: false,
+        cache: false,
+        data: form_data,
+        success: function (data) {
+            if(data.res == 'uploaded')
+                pretty_alert('success', 'Done!', 'Dataset has been uploaded successfully!')
+
+            else if(data.res == 'nofile')
+                pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
+    
+            else if(data.res == 'datasetexists')
+                pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
+            
+            else
+                pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!') 
         }
     });
 }

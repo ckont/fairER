@@ -1,12 +1,14 @@
 from pathlib import Path
 from flask import Flask, render_template, request, json
+from werkzeug.utils import secure_filename
 import library.methods as methods
 import sys, os
 sys.path.append(os.path.abspath('../'))
 import util
 
 app = Flask(__name__)
-
+UPLOAD_DATASET_FOLDER = 'data/uploads/datasets'
+ALLOWED_EXTENSIONS = {'json', 'zip'}
 
 # Navigate user to the home page
 @app.route('/')
@@ -277,6 +279,53 @@ def postProtectedCondition():
         mimetype = 'application/json'
     )
     return response
+
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route("/requests/uploadDataset", methods=['POST'])
+def uploadDataset():
+    # check if the post request has the file part
+    if 'file' not in request.files:
+        response = app.response_class(
+            response = json.dumps({'res': 'nofile'}),
+            mimetype = 'application/json'
+        )
+    file = request.files['file']
+    # If the user does not select a file, the browser submits an
+    # empty file without a filename.
+    if file.filename == '':
+        response = app.response_class(
+            response = json.dumps({'res': 'nofile'}),
+            mimetype = 'application/json'
+        )
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        if methods.check_for_duplicates(filename):
+            file.save(os.path.join(UPLOAD_DATASET_FOLDER, filename))
+            methods.extract_dataset(filename)
+            methods.delete_dataset_zip(filename)
+            response = app.response_class(
+                response = json.dumps({'res': 'uploaded'}),
+                mimetype = 'application/json'
+            )
+        else:
+            response = app.response_class(
+                response = json.dumps({'res': 'datasetexists'}),
+                mimetype = 'application/json'
+            )
+    else:
+        response = app.response_class(
+            response = json.dumps({'res': 'notallowed'}),
+            mimetype = 'application/json'
+        )
+    
+    return response
+
+
 
 
 if __name__ == "__main__":

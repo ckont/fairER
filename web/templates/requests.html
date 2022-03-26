@@ -69,8 +69,9 @@
                     Tuples</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="dataset-statistics-tab" data-bs-toggle="tab" data-bs-target="#dataset-statistics"
-                    type="button" role="tab" aria-selected="false">Dataset Statistics</button>
+                <button class="nav-link" id="dataset-statistics-tab" data-bs-toggle="tab"
+                    data-bs-target="#dataset-statistics" type="button" role="tab" aria-selected="false">Dataset
+                    Statistics</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="upload-dataset-tab" data-bs-toggle="tab" data-bs-target="#upload-dataset"
@@ -187,8 +188,12 @@
                     </ol>
                 </div>
                 <div class="mb-3">
-                    <label for="formFile" class="form-label">Upload your dataset</label>
-                    <input class="form-control" type="file" id="formFile" accept=".zip">
+                    <form action="http://127.0.0.1:5000/requests/uploadDataset" method="POST"
+                        enctype="multipart/form-data" id="dataset-upload-form">
+                        <label for="dataset-upload-file" class="form-label">Upload your dataset</label>
+                        <input class="form-control" name="dataset-upload-file" type="file" id="dataset-upload-file" accept=".zip">
+                        <button type="button" class="btn btn-success" onclick="uploadDataset()">Upload</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -196,7 +201,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/lib.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/requests.js') }}"></script>

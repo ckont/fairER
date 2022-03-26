@@ -80,17 +80,17 @@ if __name__ == '__main__':
     #############################
     # Evaluation
     #############################
-    #print("--- %s seconds ---" % (av_time / 10.0))
+    print("--- %s seconds ---" % (av_time / 10.0))
 
     accuracy = eval.get_accuracy(clusters, preds)
-    #print("accuracy:", accuracy)
+    print("accuracy:", accuracy)
 
     spd = f_eval.get_spd(clusters, preds, data)
-    #print("SPD:", spd)
+    print("SPD:", spd)
 
     eod = f_eval.get_eod(clusters, preds, data)
-    #print("EOD:", eod)
-    # print()
+    print("EOD:", eod)
+    print()
 
 
     # Write evaluation results to json file
