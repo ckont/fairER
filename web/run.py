@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath('../'))
 import util
 
 app = Flask(__name__)
-UPLOAD_DATASET_FOLDER = 'data/uploads/datasets'
+UPLOAD_DATASET_FOLDER = 'data/datasets'
 ALLOWED_EXTENSIONS = {'json', 'zip'}
 
 # Navigate user to the home page
@@ -308,6 +308,7 @@ def uploadDataset():
             file.save(os.path.join(UPLOAD_DATASET_FOLDER, filename))
             methods.extract_dataset(filename)
             methods.delete_dataset_zip(filename)
+            methods.read_uploaded_dataset(os.path.splitext(filename)[0])
             response = app.response_class(
                 response = json.dumps({'res': 'uploaded'}),
                 mimetype = 'application/json'
@@ -335,6 +336,18 @@ def getDatasetsNames():
         mimetype = 'application/json'
     )
     return response
+
+
+@app.route("/requests/downloadDMdatasets", methods=['POST'])
+def downloadDMdatasets():
+    methods.download_dataset()
+    methods.read_dm_datasets()
+    response = app.response_class(
+        response = json.dumps({'res': 'succeed'}),
+        mimetype = 'application/json'
+    )
+    return response
+
 
 
 

@@ -5,9 +5,11 @@ import csv
 import sys
 import pickle
 import zipfile
+import requests
+import shutil
 from pathlib import Path
 sys.path.append(os.path.abspath('../'))
-import util
+import util, read_datasets
 
 
 def runAlgorithm(algo, dataset, explanation):
@@ -123,7 +125,7 @@ def getAttributes(table, dataset):
     else:
         file = 'tableB.csv'
 
-    with open('../resources/DeepMatcherDatasets/'+dataset+'/'+file) as csv_file:
+    with open('../resources/Datasets/'+dataset+'/'+file) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         list_of_column_names = []
 
@@ -178,11 +180,11 @@ def deleteCachedData(dataset):
     parent_path = Path(os.getcwd()).parent.absolute()
     os.chdir(parent_path)
     best_model_path = Path(
-        'resources', 'DeepMatcherDatasets', dataset, 'best_model.pth')
+        'resources', 'Datasets', dataset, 'best_model.pth')
     cached_data_path = Path(
-        'resources', 'DeepMatcherDatasets', dataset, 'cacheddata.pth')
+        'resources', 'Datasets', dataset, 'cacheddata.pth')
     dm_results_path = Path(
-        'resources', 'DeepMatcherDatasets', dataset, 'dm_results.csv')
+        'resources', 'Datasets', dataset, 'dm_results.csv')
 
     if os.path.exists(best_model_path):
         os.remove(best_model_path)
@@ -214,7 +216,7 @@ def preds_to_json(data_path):
 
 
 def extract_dataset(filename):
-    dataset_path = os.path.join('web', 'data', 'uploads', 'datasets')
+    dataset_path = os.path.join('web', 'data', 'datasets')
 
     # new directory name 
     directory = os.path.splitext(filename)[0]
@@ -222,7 +224,7 @@ def extract_dataset(filename):
     cur_dir = os.path.abspath(".")
     parent_dir = Path(os.getcwd()).parent.absolute()
     os.chdir(parent_dir)
-    path = os.path.join(parent_dir, 'resources', 'OtherDatasets', directory)
+    path = os.path.join(parent_dir, 'resources', 'Datasets', directory)
     os.mkdir(path)
     
     with zipfile.ZipFile(os.path.join(dataset_path, filename), 'r') as zip_ref:
@@ -236,7 +238,7 @@ def check_for_duplicates(filename):
     cur_dir = os.path.abspath(".")
     parent_dir = Path(os.getcwd()).parent.absolute()
     os.chdir(parent_dir)
-    exists = os.path.exists(os.path.join('resources', 'OtherDatasets', filename))
+    exists = os.path.exists(os.path.join('resources', 'Datasets', filename))
     if not exists:
         os.chdir(cur_dir)
         return True 
@@ -245,25 +247,113 @@ def check_for_duplicates(filename):
         return False
 
 def delete_dataset_zip(filename):
-    path = os.path.join('data', 'uploads', 'datasets',filename)
+    path = os.path.join('data', 'datasets', filename)
     if os.path.exists(path):
         os.remove(path)
 
 def datasets_names_to_json():
-    list1 = []
-    list2 = []
+    datasets_list = []
+
     cur_dir = os.path.abspath(".")
     parent_dir = Path(os.getcwd()).parent.absolute()
     os.chdir(parent_dir)
-    rootdir = os.path.join('resources', 'DeepMatcherDatasets')
+    rootdir = os.path.join('resources', 'Datasets')
     for path in Path(rootdir).iterdir():
         if path.is_dir():
-            list1.append(os.path.basename(path))
-
-    rootdir = os.path.join('resources', 'OtherDatasets')
-    for path in Path(rootdir).iterdir():
-        if path.is_dir():
-            list2.append(os.path.basename(path))
+            datasets_list.append(os.path.basename(path))
     
     os.chdir(cur_dir)
-    return list1 + list2
+    return datasets_list
+
+def download_dataset():
+    Beer_url = 'http://pages.cs.wisc.edu/~anhai/data1/deepmatcher_data/Structured/Beer/beer_exp_data.zip'
+    downloaded_obj = requests.get(Beer_url)
+    with open(os.path.join('data', 'datasets', 'Beer.zip'), "wb") as file:
+        file.write(downloaded_obj.content)
+    extract_dataset('Beer.zip')
+    delete_dataset_zip('Beer.zip')
+    export_exp_data('Beer')
+
+    iTunes_Amazon_url = 'http://pages.cs.wisc.edu/~anhai/data1/deepmatcher_data/Structured/iTunes-Amazon/itunes_amazon_exp_data.zip'
+    downloaded_obj = requests.get(iTunes_Amazon_url)
+    with open(os.path.join('data', 'datasets', 'iTunes-Amazon.zip'), "wb") as file:
+        file.write(downloaded_obj.content)
+    extract_dataset('iTunes-Amazon.zip')
+    delete_dataset_zip('iTunes-Amazon.zip')
+    export_exp_data('iTunes-Amazon')
+    
+    Fodors_Zagats_url = 'http://pages.cs.wisc.edu/~anhai/data1/deepmatcher_data/Structured/Fodors-Zagats/fodors_zagat_exp_data.zip'
+    downloaded_obj = requests.get(Fodors_Zagats_url)
+    with open(os.path.join('data', 'datasets', 'Fodors-Zagats.zip'), "wb") as file:
+        file.write(downloaded_obj.content)
+    extract_dataset('Fodors-Zagats.zip')
+    delete_dataset_zip('Fodors-Zagats.zip')
+    export_exp_data('Fodors-Zagats')
+    
+    DBLP_ACM_url = 'http://pages.cs.wisc.edu/~anhai/data1/deepmatcher_data/Structured/DBLP-ACM/dblp_acm_exp_data.zip'
+    downloaded_obj = requests.get(DBLP_ACM_url)
+    with open(os.path.join('data', 'datasets', 'DBLP-ACM.zip'), "wb") as file:
+        file.write(downloaded_obj.content)
+    extract_dataset('DBLP-ACM.zip')
+    delete_dataset_zip('DBLP-ACM.zip')
+    export_exp_data('DBLP-ACM')
+    
+    DBLP_GoogleScholar_url = 'http://pages.cs.wisc.edu/~anhai/data1/deepmatcher_data/Structured/DBLP-GoogleScholar/dblp_scholar_exp_data.zip'
+    downloaded_obj = requests.get(DBLP_GoogleScholar_url)
+    with open(os.path.join('data', 'datasets', 'DBLP-GoogleScholar.zip'), "wb") as file:
+        file.write(downloaded_obj.content)
+    extract_dataset('DBLP-GoogleScholar.zip')
+    delete_dataset_zip('DBLP-GoogleScholar.zip')
+    export_exp_data('DBLP-GoogleScholar')
+
+    Amazon_Google_url = 'http://pages.cs.wisc.edu/~anhai/data1/deepmatcher_data/Structured/Amazon-Google/amazon_google_exp_data.zip'
+    downloaded_obj = requests.get(Amazon_Google_url)
+    with open(os.path.join('data', 'datasets', 'Amazon-Google.zip'), "wb") as file:
+        file.write(downloaded_obj.content)
+    extract_dataset('Amazon-Google.zip')
+    delete_dataset_zip('Amazon-Google.zip')
+    
+    Walmart_Amazon_url = 'http://pages.cs.wisc.edu/~anhai/data1/deepmatcher_data/Structured/Walmart-Amazon/walmart_amazon_exp_data.zip'
+    downloaded_obj = requests.get(Walmart_Amazon_url)
+    with open(os.path.join('data', 'datasets', 'Walmart-Amazon.zip'), "wb") as file:
+        file.write(downloaded_obj.content)
+    extract_dataset('Walmart-Amazon.zip')
+    delete_dataset_zip('Walmart-Amazon.zip')
+    export_exp_data('Walmart-Amazon')
+    
+    
+def read_dm_datasets():
+    cur_dir = os.path.abspath(".")
+    parent_dir = Path(os.getcwd()).parent.absolute()
+    os.chdir(parent_dir)
+    read_datasets.run('Beer')
+    read_datasets.run('iTunes-Amazon')
+    read_datasets.run('Fodors-Zagats')
+    read_datasets.run('DBLP-ACM')
+    read_datasets.run('DBLP-GoogleScholar')
+    read_datasets.run('Amazon-Google')
+    read_datasets.run('Walmart-Amazon')
+    os.chdir(cur_dir)
+
+def read_uploaded_dataset(dataset):
+    cur_dir = os.path.abspath(".")
+    parent_dir = Path(os.getcwd()).parent.absolute()
+    os.chdir(parent_dir)
+    read_datasets.run(dataset)
+    os.chdir(cur_dir)
+
+def export_exp_data(dataset):
+    cur_dir = os.path.abspath(".")
+    parent_dir = Path(os.getcwd()).parent.absolute()
+    os.chdir(parent_dir)
+    file_source = os.path.join('resources', 'Datasets', dataset, 'exp_data')
+    file_destination = os.path.join('resources', 'Datasets', dataset)
+    
+    shutil.copy(os.path.join(file_source,'tableA.csv'), file_destination)
+    shutil.copy(os.path.join(file_source,'tableB.csv'), file_destination)
+    shutil.copy(os.path.join(file_source,'valid.csv'), file_destination)
+    shutil.copy(os.path.join(file_source,'test.csv'), file_destination)
+    shutil.copy(os.path.join(file_source,'train.csv'), file_destination)
+    shutil.rmtree(file_source) #delete forled 'exp_data'
+
+    os.chdir(cur_dir)

@@ -57,7 +57,7 @@ def run(data, data_path, train_file, valid_file, test_file, explanation, k_resul
 if __name__ == '__main__':
     k = 20
 
-    datasets_path = 'resources/DeepMatcherDatasets/'
+    datasets_path = 'resources/Datasets/'
     data = sys.argv[1]
 
     print('\n', data, '\n')

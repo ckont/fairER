@@ -277,7 +277,7 @@ function getStatistics() {
 
 function uploadDataset() {
     var form_data = new FormData($('#dataset-upload-form')[0]);
-    if(form_data.get("dataset-upload-file")["name"].length == 0){
+    if (form_data.get("dataset-upload-file")["name"].length == 0) {
         pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
         return;
     }
@@ -290,17 +290,17 @@ function uploadDataset() {
         cache: false,
         data: form_data,
         success: function (data) {
-            if(data.res == 'uploaded')
+            if (data.res == 'uploaded')
                 pretty_alert('success', 'Done!', 'Dataset has been uploaded successfully!')
 
-            else if(data.res == 'nofile')
+            else if (data.res == 'nofile')
                 pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
-    
-            else if(data.res == 'datasetexists')
+
+            else if (data.res == 'datasetexists')
                 pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
-            
+
             else
-                pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!') 
+                pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
         }
     });
 }
@@ -310,15 +310,49 @@ $(document).ready(function () {
         type: "GET",
         url: "http://127.0.0.1:5000/requests/getDatasetsNames",
         success: function (response) {
-            first_dataset = response.res.shift();
-            $('#dataset-val').html('<option value="'+first_dataset+'" selected>'+first_dataset+'</option>')
+            datasets_names_list = response.res
+            if (datasets_names_list.length == 0) {
+                htmlRes = '<p style="color:red">No datasets found on system!</p>' +
+                    '<b><p>Press the button to download the Datasets from DeepMatcher.</b></p>' +
+                    '<button type="button" class="btn btn-success" onclick="download_dm_datasets()" style="margin-left: 40%">Download</button>';
+                $('#datasets-container').html(htmlRes)
+            }
+            else {
+                first_dataset = datasets_names_list.shift();
+                $('#dataset-val').html('<option value="' + first_dataset + '" selected>' + first_dataset + '</option>')
 
-            response.res.forEach(item => 
-                $('#dataset-val').append('<option value="'+item+'">'+item+'</option>')
-            );
+                datasets_names_list.forEach(item =>
+                    $('#dataset-val').append('<option value="' + item + '">' + item + '</option>')
+                );
+            }
         },
         error: function (error) {
             console.log(error);
         }
     });
 });
+
+function download_dm_datasets(){
+    htmlRes = '<b><p>Datasets are dowloading.</b></p><p>Estimated time: 30sec. (depending on your network speed).</p>' +
+              '<div class="loader"></div>';
+    $('#datasets-container').html(htmlRes)
+    $.ajax({
+        url: 'http://127.0.0.1:5000/requests/downloadDMdatasets',
+        type: 'POST',
+        success: function () {
+            $('#datasets-container').html('')
+            Swal.fire({
+                position: 'center',
+                icon: 'success',
+                title: 'Done!',
+                text: 'The page will be reloaded.',
+                showConfirmButton: false,
+                timer: 3000
+            })
+            setTimeout(function() { location.reload(); }, 3000);
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
