@@ -5,7 +5,6 @@ import sys
 import os
 import util
 import time
-import json
 import pandas as pd
 from clustering import fair_unique_mapping_clustering as fumc
 import evaluation.accuracy as eval
@@ -52,28 +51,22 @@ def run(data, data_path, train_file, valid_file, test_file, explanation, k_resul
     return clusters, preds
 
 
+
+
 # This pipeline performs a Fair version of Unique Mapping Clustering (creates two PQs instead of one)
 # instead of running the fa*ir algorithm for re-ranking
-if __name__ == '__main__':
+def main(data_path, train_file, valid_file, test_file, explanation):
     k = 20
-
-    datasets_path = 'resources/Datasets/'
-    data = sys.argv[1]
-
+    data = os.path.basename(data_path)
+    
     print('\n', data, '\n')
 
-    data_path = datasets_path + data + '/'
-    train_file = 'joined_train.csv'
-    valid_file = 'joined_valid.csv'
-    test_file = 'joined_test.csv'
-    # unlabeled_file = sys.argv[5] if args else data+path+'test_unlabeled.csv'  # unlabeled data for predictions
-    explanation = int(sys.argv[2])
-
+    
     av_time = 0
     for _ in range(10):
         start_time = time.time()
         clusters, preds = run(data, data_path, train_file,
-                              valid_file, test_file, explanation, k)
+                              valid_file, test_file, int(explanation), k)
         ex_time = time.time() - start_time
         av_time += ex_time
 
@@ -95,4 +88,17 @@ if __name__ == '__main__':
 
     # Write evaluation results to json file
     methods.eval_to_json(accuracy, spd, eod)
+
+
+
+if __name__ == '__main__':
+    args = len(sys.argv) > 5
+
+    datasets_path = sys.argv[1] if args else os.path.join('resources','Datasets','Beer')
     
+    train_file = sys.argv[2] if args else 'joined_train.csv'
+    valid_file = sys.argv[3] if args else 'joined_valid.csv'
+    test_file = sys.argv[4] if args else 'joined_test.csv'
+    explanation = sys.argv[5] if args else 0
+
+    main(datasets_path, train_file, valid_file, test_file, explanation)

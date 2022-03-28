@@ -6,17 +6,14 @@ import json
 import pandas as pd
 
 
-if __name__ == '__main__':
-
+def main(dataset):
     ###########
     # Matching
     ###########
-    dataset = sys.argv[1]
     train_file = 'joined_train.csv'
     valid_file = 'joined_valid.csv'
     test_file = 'joined_test.csv'
-    # unlabeled_file = sys.argv[5] if args else data+path+'test_unlabeled.csv'  # unlabeled data for predictions
-    data_path = "resources/DeepMatcherDatasets/"+dataset
+    data_path = "resources/Datasets/"+dataset
     # comment out after the first run (it writes output to file, which does not need to be re-written in every run)
     dm_results = data_path+'/dm_results.csv'
     if not os.path.exists(dm_results):
@@ -93,3 +90,11 @@ if __name__ == '__main__':
         json_string = json.dumps(data)
         with open('web/data/json_data/statistics_data.json', 'w+') as outfile:
             outfile.write(json_string)
+
+
+
+
+
+if __name__ == '__main__':
+    dataset = sys.argv[1]
+    main(dataset)

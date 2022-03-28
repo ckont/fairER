@@ -94,8 +94,9 @@ def getEOD():
 def getEvaluationResults():
     dataset = request.args.get('dataset')
     alg = request.args.get('alg')
-    explanation = request.args.get('explanation')
-    methods.runAlgorithm(alg, dataset, explanation)
+    if alg == 'fairER':
+        explanation = request.args.get('explanation')
+        methods.runFairER(dataset, explanation)
 
     with open('data/json_data/evaluation_data.json') as json_file: # open the file that was created
         data = json.load(json_file) # get the data from this file
@@ -120,9 +121,11 @@ def getEvaluationResults():
 def getPreds():
     dataset = request.args.get('dataset')
     alg = request.args.get('alg')
-    explanation = request.args.get('explanation')
-    
-    methods.runAlgorithm(alg, dataset, explanation)
+    if alg == 'fairER':
+        explanation = request.args.get('explanation')
+        methods.runFairER(dataset, explanation)  
+    else:
+        methods.runUnfair(dataset) 
 
     with open('data/json_data/preds_data.json') as json_file: # open the file that was created
         data = json.load(json_file) # get the data from this file
@@ -142,8 +145,11 @@ def getPreds():
 def getClust():
     alg = request.args.get('alg')
     dataset = request.args.get('dataset')
-    explanation = request.args.get('explanation')
-    methods.runAlgorithm(alg, dataset, explanation)  
+    if alg == 'fairER':
+        explanation = request.args.get('explanation')
+        methods.runFairER(dataset, explanation)  
+    else:
+        methods.runUnfair(dataset)  
 
     with open('data/json_data/clusters_data.json') as json_file:
         data = json.load(json_file)

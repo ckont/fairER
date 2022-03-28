@@ -2,7 +2,7 @@ function postProtectedCondition() {
     var dataset = $('#dataset-val').val();
     var condition = $('#protected-textarea').val();
     $.ajax({
-        url: 'http://127.0.0.1:5000/requests/postProtectedCondition',
+        url: '/requests/postProtectedCondition',
         type: 'POST',
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify({ 'dataset': dataset, 'condition': condition }),
@@ -28,7 +28,7 @@ function getCondition(container_id) {
     var dataset = $('#dataset-val').val();
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/getProtectedCondition?dataset=" + dataset,
+        url: "/requests/getProtectedCondition?dataset=" + dataset,
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -50,7 +50,7 @@ function getAttributes(table) {
 
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/getTableAttributes?dataset=" + dataset + "&table=" + table,
+        url: "/requests/getTableAttributes?dataset=" + dataset + "&table=" + table,
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -76,7 +76,7 @@ function tupleIsProtectedJSON(table){
     form_data.append('table', table)
     $.ajax({
         type: 'POST',
-        url: 'http://127.0.0.1:5000/requests/tupleIsProtectedJSON',
+        url: '/requests/tupleIsProtectedJSON',
         processData: false,
         contentType: false,
         async: false,
@@ -111,7 +111,7 @@ function pairIsProtectedJSON(){
     form_data.append('dataset', dataset)
     $.ajax({
         type: 'POST',
-        url: 'http://127.0.0.1:5000/requests/pairIsProtectedJSON',
+        url: '/requests/pairIsProtectedJSON',
         processData: false,
         contentType: false,
         async: false,
@@ -147,7 +147,7 @@ function getTupleIsProtected(table) {
 
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/getTupleIsProtected?dataset=" + dataset + "&table=" + table + "&json=" + json_str,
+        url: "/requests/getTupleIsProtected?dataset=" + dataset + "&table=" + table + "&json=" + json_str,
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -169,7 +169,7 @@ function getPairFields() {
 
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/getTableAttributes?dataset=" + dataset + "&table=right",
+        url: "/requests/getTableAttributes?dataset=" + dataset + "&table=right",
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -177,7 +177,7 @@ function getPairFields() {
 
             $.ajax({
                 type: "GET",
-                url: "http://127.0.0.1:5000/requests/getTableAttributes?dataset=" + dataset + "&table=left",
+                url: "/requests/getTableAttributes?dataset=" + dataset + "&table=left",
                 contentType: "application/json",
                 dataType: 'text',
                 success: function (response) {
@@ -222,7 +222,7 @@ function getPairIsProtected() {
 
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/getPairIsProtected?dataset=" + dataset + "&json1=" + str1 + "&json2=" + str2,
+        url: "/requests/getPairIsProtected?dataset=" + dataset + "&json1=" + str1 + "&json2=" + str2,
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -244,7 +244,7 @@ function getPredictions(alg, container_id) {
     $('#' + container_id).html('<div class="loader"></div>')
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/getPreds?alg=" + alg + "&dataset=" + dataset + "&explanation=" + getExplanation(),
+        url: "/requests/getPreds?alg=" + alg + "&dataset=" + dataset + "&explanation=" + getExplanation(),
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -264,7 +264,7 @@ function getClusters(alg, container_id) {
     $('#' + container_id).html('<div class="loader"></div>')
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/getClusters?alg=" + alg + "&dataset=" + dataset + "&explanation=" + getExplanation(),
+        url: "/requests/getClusters?alg=" + alg + "&dataset=" + dataset + "&explanation=" + getExplanation(),
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -290,7 +290,7 @@ function getEvaluation(alg, arg, container_id) {
     var dataset = $('#dataset-val').val()
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/get" + arg + "?alg=" + alg + "&dataset=" + dataset + "&explanation=" + getExplanation(),
+        url: "/requests/get" + arg + "?alg=" + alg + "&dataset=" + dataset + "&explanation=" + getExplanation(),
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -325,7 +325,7 @@ function getStatistics() {
 
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/getStatistics?dataset=" + dataset,
+        url: "/requests/getStatistics?dataset=" + dataset,
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -353,7 +353,7 @@ function uploadDataset() {
     }
     $.ajax({
         type: 'POST',
-        url: 'http://127.0.0.1:5000/requests/uploadDataset',
+        url: '/requests/uploadDataset',
         processData: false,
         contentType: false,
         async: false,
@@ -378,7 +378,7 @@ function uploadDataset() {
 $(document).ready(function () {
     $.ajax({
         type: "GET",
-        url: "http://127.0.0.1:5000/requests/getDatasetsNames",
+        url: "/requests/getDatasetsNames",
         success: function (response) {
             datasets_names_list = response.res
             if (datasets_names_list.length == 0) {
@@ -407,7 +407,7 @@ function download_dm_datasets(){
               '<div class="loader"></div>';
     $('#datasets-container').html(htmlRes)
     $.ajax({
-        url: 'http://127.0.0.1:5000/requests/downloadDMdatasets',
+        url: '/requests/downloadDMdatasets',
         type: 'POST',
         success: function () {
             $('#datasets-container').html('')

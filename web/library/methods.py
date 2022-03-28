@@ -9,14 +9,25 @@ import requests
 import shutil
 from pathlib import Path
 sys.path.append(os.path.abspath('../'))
-import util, read_datasets
+import util, read_datasets, main_fairER, main_unfair, statistics
 
 
-def runAlgorithm(algo, dataset, explanation):
+def runFairER(dataset, explanation):
     cur_dir = os.path.abspath(".")
     parent_dir = Path(os.getcwd()).parent.absolute()
     os.chdir(parent_dir)
-    os.system('python3 main_'+algo+'.py '+dataset+' '+str(explanation))
+    if explanation == '0':
+        main_fairER.main(os.path.join('resources','Datasets',dataset), 'joined_train.csv', 'joined_valid.csv', 'joined_test.csv', explanation)
+    else:
+        main_fairER.main(os.path.join('resources','Datasets',dataset), 'merged_train.csv', 'merged_valid.csv', 'merged_test.csv', explanation)
+    os.chdir(cur_dir)
+
+
+def runUnfair(dataset):
+    cur_dir = os.path.abspath(".")
+    parent_dir = Path(os.getcwd()).parent.absolute()
+    os.chdir(parent_dir)
+    main_unfair.main(os.path.join('resources','Datasets',dataset), 'joined_train.csv', 'joined_valid.csv', 'joined_test.csv')
     os.chdir(cur_dir)
 
 
@@ -24,26 +35,35 @@ def runStatistics(dataset):
     cur_dir = os.path.abspath(".")
     parent_dir = Path(os.getcwd()).parent.absolute()
     os.chdir(parent_dir)
-    os.system('python3 statistics.py '+dataset)
+    statistics.main(dataset)
     os.chdir(cur_dir)
 
 
 def getAccuracy(algo, dataset, explanation):
-    runAlgorithm(algo, dataset, explanation)
+    if algo == 'fairER':
+        runFairER(dataset, explanation)
+    else:
+        runUnfair(dataset)
     with open('data/json_data/evaluation_data.json') as json_file:
         data = json.load(json_file)
     return str(data['accuracy'])
 
 
-def getEOD(arg, dataset, explanation):
-    runAlgorithm(arg, dataset, explanation)
+def getEOD(algo, dataset, explanation):
+    if algo == 'fairER':
+        runFairER(dataset, explanation)
+    else:
+        runUnfair(dataset)
     with open('data/json_data/evaluation_data.json') as json_file:
         data = json.load(json_file)
     return str(data['EOD'])
 
 
-def getSPD(arg, dataset, explanation):
-    runAlgorithm(arg, dataset, explanation)
+def getSPD(algo, dataset, explanation):
+    if algo == 'fairER':
+        runFairER(dataset, explanation)
+    else:
+        runUnfair(dataset)
     with open('data/json_data/evaluation_data.json') as json_file:
         data = json.load(json_file)
     return str(data['SPD'])

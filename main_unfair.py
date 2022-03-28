@@ -45,20 +45,10 @@ def run(data, data_path, train, valid, test, k_results):
     return original_clusters, preds
 
 
-if __name__ == '__main__':
-    k = 20
-    
-    
-    datasets_path = 'resources/DeepMatcherDatasets/'
-    data = sys.argv[1]
+def main(data_path, train_file, valid_file, test_file):
 
+    data = os.path.basename(data_path)
     print('\n', data, '\n')
-
-    data_path = datasets_path + data + '/'
-    train_file = 'joined_train.csv'
-    valid_file = 'joined_valid.csv'
-    test_file = 'joined_test.csv'
-    # unlabeled_file = sys.argv[5] if args else data+path+'test_unlabeled.csv'  # unlabeled data for predictions
 
     av_time = 0
     for _ in range(10):
@@ -84,3 +74,19 @@ if __name__ == '__main__':
 
     # Write evaluation results to json file
     methods.eval_to_json(accuracy, spd, eod)
+
+
+
+
+if __name__ == '__main__':
+    args = len(sys.argv) > 4
+    k = 20
+    
+    datasets_path = sys.argv[1] if args else os.path.join('resources','Datasets','Beer')
+    train_file = sys.argv[2] if args else 'joined_train.csv'
+    valid_file = sys.argv[3] if args else 'joined_valid.csv'
+    test_file = sys.argv[4] if args else 'joined_test.csv'
+
+    main(datasets_path, train_file, valid_file, test_file)
+
+    
