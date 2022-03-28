@@ -79,6 +79,9 @@ hr {
     margin-top: 3%;
     flex-wrap: wrap;
 }
+#protected-container .btn-success{
+    margin-top: 3%;
+}
 #protected-container #or-keyword{
     margin-left: 50px;
     margin-right: 50px;

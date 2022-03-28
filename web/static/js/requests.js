@@ -64,6 +64,76 @@ function getAttributes(table) {
         }
     });
 }
+function tupleIsProtectedJSON(table){
+    var dataset = $('#dataset-val').val()
+
+    var form_data = new FormData($('#json-upload-form')[0]);
+    if (form_data.get("json-upload-file")["name"].length == 0) {
+        pretty_alert('error', 'Error!', 'You did not select a JSON!')
+        return;
+    }
+    form_data.append('dataset', dataset)
+    form_data.append('table', table)
+    $.ajax({
+        type: 'POST',
+        url: 'http://127.0.0.1:5000/requests/tupleIsProtectedJSON',
+        processData: false,
+        contentType: false,
+        async: false,
+        cache: false,
+        data: form_data,
+        success: function (data) {
+            if (data.res == 'nofile')
+                pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
+
+            else if (data.res == 'datasetexists')
+                pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
+
+            else if(data.res == 'notallowed')
+                pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
+            else
+                if (data.res == 'True')
+                    $('#protected-container').html('<b>Tuple is protected!</b>');
+                else
+                    $('#protected-container').html('<b>Tuple is not protected!</b>');
+        }
+    });
+}
+
+function pairIsProtectedJSON(){
+    var dataset = $('#dataset-val').val()
+
+    var form_data = new FormData($('#json-upload-form')[0]);
+    if (form_data.get("json-upload-file")["name"].length == 0) {
+        pretty_alert('error', 'Error!', 'You did not select a JSON!')
+        return;
+    }
+    form_data.append('dataset', dataset)
+    $.ajax({
+        type: 'POST',
+        url: 'http://127.0.0.1:5000/requests/pairIsProtectedJSON',
+        processData: false,
+        contentType: false,
+        async: false,
+        cache: false,
+        data: form_data,
+        success: function (data) {
+            if (data.res == 'nofile')
+                pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
+
+            else if (data.res == 'datasetexists')
+                pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
+
+            else if(data.res == 'notallowed')
+                pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
+            else
+                if (data.res == 'True')
+                    $('#protected-container').html('<b>Tuple is protected!</b>');
+                else
+                    $('#protected-container').html('<b>Tuple is not protected!</b>');
+        }
+    });
+}
 
 function getTupleIsProtected(table) {
     var dataset = $('#dataset-val').val()

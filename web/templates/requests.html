@@ -165,7 +165,7 @@
                     <ol>
                         <li>The dataset should be a zip file</li>
                         <li>The zip file name will be the name of the dataset</li>
-                        <li>The zip file should contain the following (5) files
+                        <li>The zip file should contain the following (5) files (no sub-folders!)
                             <ul>
                                 <li>tableA.csv</li>
                                 <li>tableB.csv</li>
@@ -174,7 +174,7 @@
                                 <li>train.csv</li>
                             </ul>
                         </li>
-                        <li>Each file should be structured <a
+                        <li>Your dataset should be structured as <a
                                 href="https://github.com/anhaidgroup/deepmatcher/blob/master/Datasets.md"
                                 target="_blank">Deepmatcher Datasets</a></li>
                         <li>Once you upload your dataset, you will be able to select it on the dataset selection
@@ -182,8 +182,7 @@
                     </ol>
                 </div>
                 <div class="mb-3">
-                    <form action="http://127.0.0.1:5000/requests/uploadDataset" method="POST"
-                        enctype="multipart/form-data" id="dataset-upload-form">
+                    <form enctype="multipart/form-data" id="dataset-upload-form">
                         <label for="dataset-upload-file" class="form-label">Upload your dataset</label>
                         <input class="form-control" name="dataset-upload-file" type="file" id="dataset-upload-file" accept=".zip">
                         <button type="button" class="btn btn-success" onclick="uploadDataset()">Upload</button>

@@ -102,7 +102,6 @@ def checkTupleProtected(dataset, arg, json_obj):
         otherSide = 'left'
     else:
         otherSide = 'right'
-    print(arg)
 
     for data in json_obj:
         key.append(arg + "_" + list(data.keys())[0])

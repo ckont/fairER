@@ -8,6 +8,7 @@ import util
 
 app = Flask(__name__)
 UPLOAD_DATASET_FOLDER = 'data/datasets'
+UPLOAD_JSON_FOLDER = 'data/datasets'
 ALLOWED_EXTENSIONS = {'json', 'zip'}
 
 # Navigate user to the home page
@@ -348,7 +349,81 @@ def downloadDMdatasets():
     )
     return response
 
+@app.route("/requests/tupleIsProtectedJSON", methods=['POST'])
+def tupleIsProtectedJSON():
+    # check if the post request has the file part
+    if 'json-upload-file' not in request.files:
+        response = app.response_class(
+            response = json.dumps({'res': 'nofile'}),
+            mimetype = 'application/json'
+        )
+        return response
+    file = request.files['json-upload-file']
+    dataset = request.form["dataset"]
+    table = request.form["table"]
 
+    if file.filename == '':
+        response = app.response_class(
+            response = json.dumps({'res': 'nofile'}),
+            mimetype = 'application/json'
+        )
+        return response
+
+    if file and allowed_file(file.filename):
+        contents = file.read()
+        json_obj = json.loads(contents)
+
+        result = methods.checkTupleProtected(dataset, table, json_obj["attributes"])  
+        response = app.response_class(
+            response = json.dumps({'res': str(result)}),
+            mimetype = 'application/json'
+        )
+    else:
+        response = app.response_class(
+            response = json.dumps({'res': 'notallowed'}),
+            mimetype = 'application/json'
+        )
+    
+    return response
+
+
+@app.route("/requests/pairIsProtectedJSON", methods=['POST'])
+def pairIsProtectedJSON():
+    # check if the post request has the file part
+    if 'json-upload-file' not in request.files:
+        response = app.response_class(
+            response = json.dumps({'res': 'nofile'}),
+            mimetype = 'application/json'
+        )
+        return response
+    file = request.files['json-upload-file']
+    dataset = request.form["dataset"]
+
+    if file.filename == '':
+        response = app.response_class(
+            response = json.dumps({'res': 'nofile'}),
+            mimetype = 'application/json'
+        )
+        return response
+        
+    if file and allowed_file(file.filename):
+        contents = file.read()
+        json_obj = (json.loads(contents))["tables"]
+
+        result1 = methods.checkTupleProtected(dataset, 'right', json_obj[1]["right"])
+        result2 = methods.checkTupleProtected(dataset, 'left', json_obj[0]["left"])
+        pair_is_protected = result1 or result2  
+        response = app.response_class( 
+            response = json.dumps({'res': str(pair_is_protected)}),
+            mimetype = 'application/json'
+        )
+    else:
+        response = app.response_class(
+            response = json.dumps({'res': 'notallowed'}),
+            mimetype = 'application/json'
+        )
+    
+    return response
 
 
 if __name__ == "__main__":

@@ -1,26 +1,26 @@
-function editCondition(){  
+function editCondition() {
     getPredictions('fairER', 'general-container') //show predictions
-    var htmlRes =   '<div class="mb-3">'+
-                        '<label for="protected-textarea" class="form-label"><b>Edit Protected Condition</b></label>'+
-                        '<textarea class="form-control" id="protected-textarea" rows="3" cols="100"></textarea>'+
-                        '<br><button type="button" class="btn btn-success" onclick="postProtectedCondition()">Send</button>'+
-                    '</div>';
+    var htmlRes = '<div class="mb-3">' +
+        '<label for="protected-textarea" class="form-label"><b>Edit Protected Condition</b></label>' +
+        '<textarea class="form-control" id="protected-textarea" rows="3" cols="100"></textarea>' +
+        '<br><button type="button" class="btn btn-success" onclick="postProtectedCondition()">Send</button>' +
+        '</div>';
     $('#protected-container').html(htmlRes)
     getCondition('protected-textarea')
 }
 
 
 /* Radio button (right or left) */
-function getTableOptions(){
+function getTableOptions() {
     $('#general-container').html('')
-    var htmlRes =   '<b>Select the table proper table:</b><div class="form-check">'+
-                        '<input class="form-check-input" type="radio" id="left-radio" onclick="getAttributes(\'left\')">'+
-                        '<label class="form-check-label" for="left-radio">Left</label>'+
-                    '</div>'+
-                    '<div class="form-check">'+
-                        '<input class="form-check-input" type="radio" id="right-radio" onclick="getAttributes(\'right\')">'+
-                        '<label class="form-check-label" for="right-radio">Right</label>'+
-                    '</div>';
+    var htmlRes = '<b>Select the table proper table:</b><div class="form-check">' +
+        '<input class="form-check-input" type="radio" id="left-radio" onclick="getAttributes(\'left\')">' +
+        '<label class="form-check-label" for="left-radio">Left</label>' +
+        '</div>' +
+        '<div class="form-check">' +
+        '<input class="form-check-input" type="radio" id="right-radio" onclick="getAttributes(\'right\')">' +
+        '<label class="form-check-label" for="right-radio">Right</label>' +
+        '</div>';
     $('#protected-container').html(htmlRes)
 }
 
@@ -32,20 +32,24 @@ function tupleAttributesToInput(attr_list, table) {
         htmlRes += '<input type="text" class="form-control" id="' + value + '"></div>';
     }
 
-    htmlRes += '<br><button type="button" class="btn btn-success" onclick="getTupleIsProtected(\''+table+'\')">Check</button></form>';
-    htmlRes +=  '<p id="or-keyword"><b>Or</b></p><div class="mb-3">'+
-                    '<label for="formFile" class="form-label"><b>Upload your json file</b></label>'+
-                    '<input class="form-control" type="file" id="formFile" accept=".json">'+
-                    '<button type="button" class="btn btn-link" onclick="json_tupple_info()">JSON file structure</button>'+
-                '</div>';
+    htmlRes += '<button type="button" class="btn btn-success" onclick="getTupleIsProtected(\'' + table + '\')">Check</button></form>';
+    htmlRes += '<p id="or-keyword"><b>Or</b></p><div class="mb-3">' +
+        '<form enctype="multipart/form-data" id="json-upload-form">' +
+        '<label for="json-upload-file" class="form-label">Upload your json file</label>' +
+        '<input class="form-control" name="json-upload-file" type="file" id="json-upload-file" accept=".json">' +
+        '<button type="button" class="btn btn-success" onclick="tupleIsProtectedJSON(\'' + table + '\')">Upload</button>' +
+        '<button type="button" class="btn btn-link" onclick="json_tupple_info()">JSON file structure</button>' +
+        '</form>';
+    '</div>';
     return htmlRes;
 }
+
 /* Message showing the right json structure to represent a tuple */
-function json_tupple_info(){
-    JSONsample =    '{ "<b>attributes</b>" : [ <br>{ "Beer_Name" : "Rocket City Red" },<br>'+
-                    '{ "Brew_Factory_Name" : "Tarraco Beer"},<br>'+
-                     '            ...          <br>'+
-                    '{ "AttributeN" : "valueN"} ] }'
+function json_tupple_info() {
+    JSONsample = '{ "<b>attributes</b>" : [ <br>{ "Beer_Name" : "Rocket City Red" },<br>' +
+        '{ "Brew_Factory_Name" : "Tarraco Beer"},<br>' +
+        '            ...          <br>' +
+        '{ "AttributeN" : "valueN"} ] }'
     Swal.fire('Example', JSONsample, 'info')
 }
 
@@ -65,27 +69,38 @@ function pairAttributesToInput(right_obj, left_obj) {
     }
 
     htmlRes += "<br><button type='button' class='btn btn-success' onclick='getPairIsProtected();'>Check</button></form>";
-    htmlRes +=  '<p id="or-keyword"><b>Or</b></p><div class="mb-3">'+
-                    '<label for="formFile" class="form-label"><b>Upload your json file</b></label>'+
-                    '<input class="form-control" type="file" id="formFile" accept=".json" multiple>'+
-                    '<button type="button" class="btn btn-link" onclick="json_pair_info()">JSON file structure</button>'+
-                '</div>';
+    htmlRes += '<p id="or-keyword"><b>Or</b></p><div class="mb-3">' +
+        '<form enctype="multipart/form-data" id="json-upload-form">' +
+        '<label for="json-upload-file" class="form-label">Upload your json file</label>' +
+        '<input class="form-control" name="json-upload-file" type="file" id="json-upload-file" accept=".json">' +
+        '<button type="button" class="btn btn-success" onclick="pairIsProtectedJSON()">Upload</button>' +
+        '<button type="button" class="btn btn-link" onclick="json_pair_info()">JSON file structure</button>' +
+        '</form>';
+    '</div>';
     return htmlRes;
 }
 /* Message showing the right json structure to represent a pair */
-function json_pair_info(){
-    JSONsample =    '{ "<b>right_table</b>" : <br>[ { "Beer_Name" : "Rocket City Red" },<br>'+
-                    '{ "Brew_Factory_Name" : "Tarraco Beer"},<br>'+
-                     '            ...          <br>'+
-                    '{ "RAttributeN" : "RvalueN"} ] }<br><br><b>and</b><br><br>'
+function json_pair_info() {
+    JSONsample = '{ "<b>tables</b>":<br>'+
+                            '[ { <b>"left"</b>: [<br>' +
+                                '{ "Beer_Name": "Rocket City Red" }, <br>'+
+                                '{ "Brew_Factory_Name": "Tarraco Beer" },<br>'+
+                                '                  ...<br>'+
+                                '{ "LAttributeN": "LValueN" } ]<br>'+
+                            '},<br>'+
+                            '[ { <b>"right"</b>: [<br>' +
+                                '{ "Beer_Name": "Rocket City Red" }, <br>'+
+                                '{ "Brew_Factory_Name": "Tarraco Beer" },<br>'+
+                                '                  ...<br>'+
+                                '{ "RAttributeM": "RValueM" } ]<br>'+
+                            '} ]<br>'+
+                    '] }<br>';
 
-    JSONsample +=    '{ "<b>left_table</b>" : [ <br>{ "Beer_Name" : "Ruby Red American Ale" },<br>'+
-                    '{ "Brew_Factory_Name" : "Tarraco Beer"},<br>'+
-                     '            ...          <br>'+
-                    '{ "LAttributeM" : "LvalueM"} ] }<br>'
-    
+
     Swal.fire('Example', JSONsample, 'info')
 }
+
+                    
 
 /* predictions json to html table */
 function predsTableBuilder(jsonData) {
@@ -132,10 +147,10 @@ function predsTableBuilder(jsonData) {
     return preds_HTML_table;
 }
 
-function getExplanation(){
+function getExplanation() {
     if ($('input[type=checkbox][id=explanationSwitch]:checked').val())
         return '1'
-    else 
+    else
         return '0'
 }
 
@@ -156,10 +171,10 @@ function clustersTableBuilder(header, body) {
 }
 
 function tableBuilder(header, body, id) {
-    table = '<table class="table" id="'+id+'"><thead><tr>';
+    table = '<table class="table" id="' + id + '"><thead><tr>';
 
     for (var hVal of header)
-    table += '<th scope="col">' + hVal + '</th>'
+        table += '<th scope="col">' + hVal + '</th>'
     table += '</tr></thead><tbody><tr>'
 
     for (var bVal of body)
@@ -217,7 +232,7 @@ function clearPrefix(str) {
         return str.substring(5);
 }
 
-function pretty_alert(icon, title, text){
+function pretty_alert(icon, title, text) {
     Swal.fire({
         position: 'center',
         icon: icon,
