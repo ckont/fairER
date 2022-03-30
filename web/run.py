@@ -230,12 +230,12 @@ def getTablesAttributes():
 #          --arg -> left or right table                                     #
 #          --json -> a json object that contains the values for this tuple  #
 #############################################################################
-@app.route("/requests/getTupleIsProtected")
-def getTupleIsProtected():
-    dataset = request.args.get('dataset')
-    table = request.args.get('table')
-    json_str = request.args.get('json')
-    #attributes_json = mylib.getAttributes(arg, dataset)
+@app.route("/requests/tupleIsProtected", methods=['POST'])
+def tupleIsProtected():
+    request_data = request.get_json()
+    dataset = request_data['dataset']
+    table = request_data['table']
+    json_str = request_data['json']
 
     json_obj = json.loads(json_str)
     result = methods.checkTupleProtected(dataset, table, json_obj["attributes"])
@@ -251,11 +251,12 @@ def getTupleIsProtected():
 #          --json1 -> a json object that contains the values of the first table  #
 #          --json1 -> a json object that contains the values of the second table #
 ##################################################################################
-@app.route("/requests/getPairIsProtected")
+@app.route("/requests/pairIsProtected", methods=['POST'])
 def getPairIsProtected():
-    dataset = request.args.get('dataset')
-    json_str1 = request.args.get('json1')
-    json_str2 = request.args.get('json2')
+    request_data = request.get_json()
+    dataset = request_data['dataset']
+    json_str1 = request_data['json1']
+    json_str2 = request_data['json2']
 
     json_obj1 = json.loads(json_str1)
     json_obj2 = json.loads(json_str2)
@@ -404,6 +405,7 @@ def pairIsProtectedJSON():
         return response
     file = request.files['json-upload-file']
     dataset = request.form["dataset"]
+    
 
     if file.filename == '':
         response = app.response_class(
@@ -415,12 +417,12 @@ def pairIsProtectedJSON():
     if file and allowed_file(file.filename):
         contents = file.read()
         json_obj = (json.loads(contents))["tables"]
+        result1 = methods.checkTupleProtected(dataset, 'right', json_obj[1].get("right"))
+        result2 = methods.checkTupleProtected(dataset, 'left', json_obj[0].get("left"))
 
-        result1 = methods.checkTupleProtected(dataset, 'right', json_obj[1]["right"])
-        result2 = methods.checkTupleProtected(dataset, 'left', json_obj[0]["left"])
         pair_is_protected = result1 or result2  
         response = app.response_class( 
-            response = json.dumps({'res': str(pair_is_protected)}),
+            response = json.dumps({'res': str(pair_is_protected)}), 
             mimetype = 'application/json'
         )
     else:

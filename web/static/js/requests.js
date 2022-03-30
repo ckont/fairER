@@ -135,7 +135,7 @@ function pairIsProtectedJSON(){
     });
 }
 
-function getTupleIsProtected(table) {
+function tupleIsProtected(table) {
     var dataset = $('#dataset-val').val()
     var json_str = '{ "attributes" : [';
 
@@ -146,13 +146,12 @@ function getTupleIsProtected(table) {
     json_str += ' ]}';
 
     $.ajax({
-        type: "GET",
-        url: "/requests/getTupleIsProtected?dataset=" + dataset + "&table=" + table + "&json=" + json_str,
-        contentType: "application/json",
-        dataType: 'text',
-        success: function (response) {
-            var obj = JSON.parse(response);
-            if (obj.res == 'True')
+        type: "POST",
+        url: '/requests/tupleIsProtected',
+        contentType: 'application/json',
+        data : JSON.stringify({"dataset" : dataset, table : table, json : json_str}),
+        success : (data) => {
+            if (data.res == 'True')
                 $('#protected-container').html('<b>Tuple is protected!</b>');
             else
                 $('#protected-container').html('<b>Tuple is not protected!</b>');
@@ -197,7 +196,7 @@ function getPairFields() {
     });
 }
 
-function getPairIsProtected() {
+function pairIsProtected() {
     var dataset = $('#dataset-val').val()
 
     //Build a json with all the data from the form
@@ -221,14 +220,13 @@ function getPairIsProtected() {
 
 
     $.ajax({
-        type: "GET",
-        url: "/requests/getPairIsProtected?dataset=" + dataset + "&json1=" + str1 + "&json2=" + str2,
-        contentType: "application/json",
-        dataType: 'text',
-        success: function (response) {
-            var obj = JSON.parse(response);
+        type: "POST",
+        url: '/requests/pairIsProtected',
+        contentType: 'application/json;charset=UTF-8',
+        data : JSON.stringify({'dataset' : dataset, 'json1' : str1, 'json2' : str2}),
+        success: function (data) {
 
-            if (obj.res == 'True')
+            if (data.res == 'True')
                 $('#protected-container').html('<b>Pair is protected!</b>');
             else
                 $('#protected-container').html('<b>Pair is not protected!</b>');

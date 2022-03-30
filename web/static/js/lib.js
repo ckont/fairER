@@ -32,7 +32,7 @@ function tupleAttributesToInput(attr_list, table) {
         htmlRes += '<input type="text" class="form-control" id="' + value + '"></div>';
     }
 
-    htmlRes += '<button type="button" class="btn btn-success" onclick="getTupleIsProtected(\'' + table + '\')">Check</button></form>';
+    htmlRes += '<button type="button" class="btn btn-success" onclick="tupleIsProtected(\'' + table + '\')">Check</button></form>';
     htmlRes += '<p id="or-keyword"><b>Or</b></p><div class="mb-3">' +
         '<form enctype="multipart/form-data" id="json-upload-form">' +
         '<label for="json-upload-file" class="form-label">Upload your json file</label>' +
@@ -68,7 +68,7 @@ function pairAttributesToInput(right_obj, left_obj) {
         htmlRes += '<input type="text" class="form-control" id="left-' + value + '"></div>';
     }
 
-    htmlRes += "<br><button type='button' class='btn btn-success' onclick='getPairIsProtected();'>Check</button></form>";
+    htmlRes += "<br><button type='button' class='btn btn-success' onclick='pairIsProtected();'>Check</button></form>";
     htmlRes += '<p id="or-keyword"><b>Or</b></p><div class="mb-3">' +
         '<form enctype="multipart/form-data" id="json-upload-form">' +
         '<label for="json-upload-file" class="form-label">Upload your json file</label>' +
