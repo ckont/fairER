@@ -44,7 +44,7 @@
         <div class="container-fluid" id="datasets-container">
             <p><b>Select a Dataset</b></p>
             <select class="form-select" id="dataset-val">
-                
+
             </select>
 
         </div>
@@ -75,10 +75,6 @@
         <div class="tab-content">
             <div class="tab-pane fade show active" id="FairER" role="tabpanel" aria-labelledby="FairER-tab">
                 <div class="container fairER-container">
-                    <div class="row form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="explanationSwitch" />
-                        <label class="form-check-label" for="explanationSwitch">Explanation</label>
-                    </div>
                     <div class="btn-group container" role="group">
                         <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle"
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -101,6 +97,8 @@
                         <button type="button" class="btn btn-secondary"
                             onclick="getPredictions('fairER', 'fairer-container')">Get
                             Predictions</button>
+                        <button type="button" class="btn btn-secondary" onclick="getExplanation()">Get
+                            Explanation</button>
                     </div>
                     <div id="fairer-container">
 
@@ -184,7 +182,8 @@
                 <div class="mb-3">
                     <form enctype="multipart/form-data" id="dataset-upload-form">
                         <label for="dataset-upload-file" class="form-label">Upload your dataset</label>
-                        <input class="form-control" name="dataset-upload-file" type="file" id="dataset-upload-file" accept=".zip">
+                        <input class="form-control" name="dataset-upload-file" type="file" id="dataset-upload-file"
+                            accept=".zip">
                         <button type="button" class="btn btn-success" onclick="uploadDataset()">Upload</button>
                     </form>
                 </div>

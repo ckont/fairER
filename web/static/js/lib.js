@@ -13,7 +13,7 @@ function editCondition() {
 /* Radio button (right or left) */
 function getTableOptions() {
     $('#general-container').html('')
-    var htmlRes = '<b>Select the table proper table:</b><div class="form-check">' +
+    var htmlRes = '<b>Table:</b><div class="form-check">' +
         '<input class="form-check-input" type="radio" id="left-radio" onclick="getAttributes(\'left\')">' +
         '<label class="form-check-label" for="left-radio">Left</label>' +
         '</div>' +
@@ -81,26 +81,26 @@ function pairAttributesToInput(right_obj, left_obj) {
 }
 /* Message showing the right json structure to represent a pair */
 function json_pair_info() {
-    JSONsample = '{ "<b>tables</b>":<br>'+
-                            '[ { <b>"left"</b>: [<br>' +
-                                '{ "Beer_Name": "Rocket City Red" }, <br>'+
-                                '{ "Brew_Factory_Name": "Tarraco Beer" },<br>'+
-                                '                  ...<br>'+
-                                '{ "LAttributeN": "LValueN" } ]<br>'+
-                            '},<br>'+
-                            '[ { <b>"right"</b>: [<br>' +
-                                '{ "Beer_Name": "Rocket City Red" }, <br>'+
-                                '{ "Brew_Factory_Name": "Tarraco Beer" },<br>'+
-                                '                  ...<br>'+
-                                '{ "RAttributeM": "RValueM" } ]<br>'+
-                            '} ]<br>'+
-                    '] }<br>';
+    JSONsample = '{ "<b>tables</b>":<br>' +
+        '[ { <b>"left"</b>: [<br>' +
+        '{ "Beer_Name": "Rocket City Red" }, <br>' +
+        '{ "Brew_Factory_Name": "Tarraco Beer" },<br>' +
+        '                  ...<br>' +
+        '{ "LAttributeN": "LValueN" } ]<br>' +
+        '},<br>' +
+        '[ { <b>"right"</b>: [<br>' +
+        '{ "Beer_Name": "Rocket City Red" }, <br>' +
+        '{ "Brew_Factory_Name": "Tarraco Beer" },<br>' +
+        '                  ...<br>' +
+        '{ "RAttributeM": "RValueM" } ]<br>' +
+        '} ]<br>' +
+        '] }<br>';
 
 
     Swal.fire('Example', JSONsample, 'info')
 }
 
-                    
+
 
 /* predictions json to html table */
 function predsTableBuilder(jsonData) {
@@ -147,7 +147,7 @@ function predsTableBuilder(jsonData) {
     return preds_HTML_table;
 }
 
-function getExplanation() {
+function getExplanationSwitch() {
     if ($('input[type=checkbox][id=explanationSwitch]:checked').val())
         return '1'
     else

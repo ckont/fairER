@@ -7,6 +7,8 @@ import pickle
 import zipfile
 import requests
 import shutil
+import base64
+
 from pathlib import Path
 sys.path.append(os.path.abspath('../'))
 import util, read_datasets, main_fairER, main_unfair, statistics
@@ -16,11 +18,11 @@ def runFairER(dataset, explanation):
     cur_dir = os.path.abspath(".")
     parent_dir = Path(os.getcwd()).parent.absolute()
     os.chdir(parent_dir)
-    if explanation == '0':
+    if int(explanation) == 0:
         main_fairER.main(os.path.join('resources','Datasets',dataset), 'joined_train.csv', 'joined_valid.csv', 'joined_test.csv', explanation)
     else:
         main_fairER.main(os.path.join('resources','Datasets',dataset), 'merged_train.csv', 'merged_valid.csv', 'merged_test.csv', explanation)
-    os.chdir(cur_dir)
+    os.chdir(cur_dir) 
 
 
 def runUnfair(dataset):
@@ -195,7 +197,7 @@ def condInFile(dataset):
 
 
 def deleteCachedData(dataset):
-    path = Path(os.getcwd())
+    cur_dir = os.path.abspath(".")
     parent_path = Path(os.getcwd()).parent.absolute()
     os.chdir(parent_path)
     best_model_path = Path(
@@ -204,6 +206,10 @@ def deleteCachedData(dataset):
         'resources', 'Datasets', dataset, 'cacheddata.pth')
     dm_results_path = Path(
         'resources', 'Datasets', dataset, 'dm_results.csv')
+    figure_1_path = Path(
+        'resources', 'Datasets', dataset, 'figures', 'Figure_1.png')
+    figure_2_path = Path(
+        'resources', 'Datasets', dataset, 'figures', 'Figure_2.png')
 
     if os.path.exists(best_model_path):
         os.remove(best_model_path)
@@ -211,8 +217,12 @@ def deleteCachedData(dataset):
         os.remove(cached_data_path)
     if os.path.exists(dm_results_path):
         os.remove(dm_results_path)
+    if os.path.exists(figure_1_path):
+        os.remove(figure_1_path)
+    if os.path.exists(figure_2_path):
+        os.remove(figure_2_path)
 
-    os.chdir(path)
+    os.chdir(cur_dir)
 
 
 def eval_to_json(accuracy, spd, eod):
@@ -245,6 +255,8 @@ def extract_dataset(filename):
     os.chdir(parent_dir)
     path = os.path.join(parent_dir, 'resources', 'Datasets', directory)
     os.mkdir(path)
+    figures_path = os.path.join(path, 'figures')
+    os.mkdir(figures_path)
     
     with zipfile.ZipFile(os.path.join(dataset_path, filename), 'r') as zip_ref:
         zip_ref.extractall(path)
@@ -376,3 +388,25 @@ def export_exp_data(dataset):
     shutil.rmtree(file_source) #delete forled 'exp_data'
 
     os.chdir(cur_dir)
+
+def img_to_base64(dataset, figure):
+    cur_dir = os.path.abspath(".")
+    parent_dir = Path(os.getcwd()).parent.absolute()
+    os.chdir(parent_dir)
+
+    path_to_figure = os.path.join('resources', 'Datasets', dataset, 'figures', figure)
+    with open(path_to_figure, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read())
+
+    os.chdir(cur_dir)
+    return encoded_string.decode('utf-8')
+
+
+def explanation_exist(dataset):
+    cur_dir = os.path.abspath(".")
+    parent_dir = Path(os.getcwd()).parent.absolute()
+    os.chdir(parent_dir)
+    path_to_figure = os.path.join('resources', 'Datasets', dataset, 'figures', 'Figure_1.png')
+    exists = os.path.exists(path_to_figure)
+    os.chdir(cur_dir)
+    return exists

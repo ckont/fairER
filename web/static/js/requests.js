@@ -64,7 +64,7 @@ function getAttributes(table) {
         }
     });
 }
-function tupleIsProtectedJSON(table){
+function tupleIsProtectedJSON(table) {
     var dataset = $('#dataset-val').val()
 
     var form_data = new FormData($('#json-upload-form')[0]);
@@ -89,7 +89,7 @@ function tupleIsProtectedJSON(table){
             else if (data.res == 'datasetexists')
                 pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
 
-            else if(data.res == 'notallowed')
+            else if (data.res == 'notallowed')
                 pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
             else
                 if (data.res == 'True')
@@ -100,7 +100,7 @@ function tupleIsProtectedJSON(table){
     });
 }
 
-function pairIsProtectedJSON(){
+function pairIsProtectedJSON() {
     var dataset = $('#dataset-val').val()
 
     var form_data = new FormData($('#json-upload-form')[0]);
@@ -124,13 +124,13 @@ function pairIsProtectedJSON(){
             else if (data.res == 'datasetexists')
                 pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
 
-            else if(data.res == 'notallowed')
+            else if (data.res == 'notallowed')
                 pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
             else
                 if (data.res == 'True')
-                    $('#protected-container').html('<b>Tuple is protected!</b>');
+                    $('#protected-container').html('<b>Pair is protected!</b>');
                 else
-                    $('#protected-container').html('<b>Tuple is not protected!</b>');
+                    $('#protected-container').html('<b>Pair is not protected!</b>');
         }
     });
 }
@@ -149,8 +149,8 @@ function tupleIsProtected(table) {
         type: "POST",
         url: '/requests/tupleIsProtected',
         contentType: 'application/json',
-        data : JSON.stringify({"dataset" : dataset, table : table, json : json_str}),
-        success : (data) => {
+        data: JSON.stringify({ "dataset": dataset, table: table, json: json_str }),
+        success: (data) => {
             if (data.res == 'True')
                 $('#protected-container').html('<b>Tuple is protected!</b>');
             else
@@ -223,7 +223,7 @@ function pairIsProtected() {
         type: "POST",
         url: '/requests/pairIsProtected',
         contentType: 'application/json;charset=UTF-8',
-        data : JSON.stringify({'dataset' : dataset, 'json1' : str1, 'json2' : str2}),
+        data: JSON.stringify({ 'dataset': dataset, 'json1': str1, 'json2': str2 }),
         success: function (data) {
 
             if (data.res == 'True')
@@ -242,7 +242,7 @@ function getPredictions(alg, container_id) {
     $('#' + container_id).html('<div class="loader"></div>')
     $.ajax({
         type: "GET",
-        url: "/requests/getPreds?alg=" + alg + "&dataset=" + dataset + "&explanation=" + getExplanation(),
+        url: "/requests/getPreds?alg=" + alg + "&dataset=" + dataset + "&explanation=1",
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -262,7 +262,7 @@ function getClusters(alg, container_id) {
     $('#' + container_id).html('<div class="loader"></div>')
     $.ajax({
         type: "GET",
-        url: "/requests/getClusters?alg=" + alg + "&dataset=" + dataset + "&explanation=" + getExplanation(),
+        url: "/requests/getClusters?alg=" + alg + "&dataset=" + dataset + "&explanation=1",
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -288,7 +288,7 @@ function getEvaluation(alg, arg, container_id) {
     var dataset = $('#dataset-val').val()
     $.ajax({
         type: "GET",
-        url: "/requests/get" + arg + "?alg=" + alg + "&dataset=" + dataset + "&explanation=" + getExplanation(),
+        url: "/requests/get" + arg + "?alg=" + alg + "&dataset=" + dataset + "&explanation=1",
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
@@ -400,9 +400,9 @@ $(document).ready(function () {
     });
 });
 
-function download_dm_datasets(){
+function download_dm_datasets() {
     htmlRes = '<b><p>Datasets are dowloading.</b></p><p>Estimated time: 30sec. (depending on your network speed).</p>' +
-              '<div class="loader"></div>';
+        '<div class="loader"></div>';
     $('#datasets-container').html(htmlRes)
     $.ajax({
         url: '/requests/downloadDMdatasets',
@@ -417,7 +417,33 @@ function download_dm_datasets(){
                 showConfirmButton: false,
                 timer: 3000
             })
-            setTimeout(function() { location.reload(); }, 3000);
+            setTimeout(function () { location.reload(); }, 3000);
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+function getExplanation() {
+    $('#fairer-container').html('<div class="loader"></div>')
+    var dataset = $('#dataset-val').val()
+
+    $.ajax({
+        type: "GET",
+        url: "/requests/getExplanation?dataset=" + dataset,
+        dataType: 'text',
+        success: function (response) {
+            const obj = JSON.parse(response);
+            var image1 = new Image();
+            image1.src = 'data:image/png;base64,'+obj.base64_1;
+            image1.id = 'explanation-img'
+            $('#fairer-container').html(image1);
+
+            var image2 = new Image();
+            image2.src = 'data:image/png;base64,'+obj.base64_2;
+            image2.id = 'explanation-img'
+            $('#fairer-container').append(image2);
         },
         error: function (error) {
             console.log(error);

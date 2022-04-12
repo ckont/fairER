@@ -35,7 +35,7 @@ def run(data, data_path, train_file, valid_file, test_file, explanation, k_resul
     #################################
     # Fair Unique Mapping Clustering
     #################################
-    initial_pairs = [(int(a.id.split('_')[0]), int(a.id.split('_')[1]), a.match_score, util.pair_is_protected(a, data))
+    initial_pairs = [(int(a.id.split('_')[0]), int(a.id.split('_')[1]), a.match_score, util.pair_is_protected(a, data, False, explanation))
                      for a in preds.itertuples(index=False)]
 
     clusters = fumc.run(initial_pairs, k_results)
@@ -61,7 +61,6 @@ def main(data_path, train_file, valid_file, test_file, explanation):
     
     print('\n', data, '\n')
 
-    
     av_time = 0
     for _ in range(10):
         start_time = time.time()

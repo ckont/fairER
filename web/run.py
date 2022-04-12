@@ -433,6 +433,23 @@ def pairIsProtectedJSON():
     
     return response
 
+@app.route("/requests/getExplanation", methods=['GET'])
+def getExplanation():
+    dataset = request.args.get('dataset')   
+    if methods.explanation_exist(dataset) == False:
+        methods.deleteCachedData(dataset)
+        methods.runFairER(dataset, 1)
+    base64_1 = methods.img_to_base64(dataset, 'Figure_1.png')
+    base64_2 = methods.img_to_base64(dataset, 'Figure_2.png')
+    response = app.response_class(
+            response = json.dumps({'base64_1': base64_1, 'base64_2': base64_2}),
+            mimetype = 'application/json'
+        )
+    
+    return response
+
+
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True)  
