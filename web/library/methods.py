@@ -29,7 +29,7 @@ def runUnfair(dataset):
     cur_dir = os.path.abspath(".")
     parent_dir = Path(os.getcwd()).parent.absolute()
     os.chdir(parent_dir)
-    main_unfair.main(os.path.join('resources','Datasets',dataset), 'joined_train.csv', 'joined_valid.csv', 'joined_test.csv')
+    main_unfair.main(os.path.join('resources','Datasets',dataset), 'joined_train.csv', 'joined_valid.csv', 'joined_test.csv', 20) # k==20
     os.chdir(cur_dir)
 
 
@@ -71,9 +71,12 @@ def getSPD(algo, dataset, explanation):
     return str(data['SPD'])
 
 
-def protectedCond(dataset):
+def protectedCond(dataset, explanation):
     data = {}
-    pickle_path = 'data/pickle_data/protected_conditions.pkl'
+    if explanation == 0:
+        pickle_path = os.path.join('data', 'pickle_data', 'protected_conditions.pkl')
+    else:
+        pickle_path = os.path.join('data', 'pickle_data', 'protected_conditions_w_exp.pkl')
     curr_dir = os.path.split(os.getcwd())[1]
     if curr_dir == 'fairER':
         pickle_path = 'web/' + pickle_path
@@ -161,9 +164,11 @@ def getAttributes(table, dataset):
     return jsonString
 
 
-def saveNewCond(dataset, condition):
+def saveNewCond(dataset, condition, condition_w_exp):
     data = {}
-    pickle_path = 'data/pickle_data/protected_conditions.pkl'
+    data_w_exp = {}
+    pickle_path = os.path.join('data', 'pickle_data', 'protected_conditions.pkl')
+    pickle_w_exp_path = os.path.join('data', 'pickle_data', 'protected_conditions_w_exp.pkl')
     curr_dir = os.path.split(os.getcwd())[1]
     if curr_dir == 'fairER':
         pickle_path = 'web/' + pickle_path
@@ -171,15 +176,20 @@ def saveNewCond(dataset, condition):
     if os.path.exists(pickle_path) and os.path.getsize(pickle_path) > 0:
         with open(pickle_path, 'rb') as pkl_file:
             data = pickle.load(pkl_file)
+        with open(pickle_w_exp_path, 'rb') as pkl_file_w_exp:
+            data_w_exp = pickle.load(pkl_file_w_exp)
 
     data[dataset] = condition
+    data_w_exp[dataset] = condition_w_exp
     with open(pickle_path, 'wb') as pkl_file:
         pickle.dump(data, pkl_file, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(pickle_w_exp_path, 'wb') as pkl_file_w_exp:
+        pickle.dump(data_w_exp, pkl_file_w_exp, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def condInFile(dataset):
     data = {}
-    pickle_path = 'data/pickle_data/protected_conditions.pkl'
+    pickle_path = os.path.join('data', 'pickle_data', 'protected_conditions.pkl')
 
     curr_dir = os.path.split(os.getcwd())[1]
     if curr_dir == 'fairER':

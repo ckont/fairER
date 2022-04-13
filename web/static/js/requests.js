@@ -1,14 +1,19 @@
 function postProtectedCondition() {
+
+    left_attribute = $("#left-tbl").val();
+    left_value = $("#left-value").val();
+    right_attribute = $("#right-tbl").val();
+    right_value = $("#right-value").val();
+
+    new_condition = '("'+left_value+'" in str(tuple.left_'+left_attribute+')) or ("'+right_value+'" in str(tuple.right_'+right_attribute+'))'
+    new_condition_w_exp = '("'+left_value+'" in str(tuple.ltable_'+left_attribute+')) or ("'+right_value+'" in str(tuple.rtable_'+right_attribute+'))'
     var dataset = $('#dataset-val').val();
-    var condition = $('#protected-textarea').val();
     $.ajax({
         url: '/requests/postProtectedCondition',
         type: 'POST',
         contentType: "application/json; charset=utf-8",
-        data: JSON.stringify({ 'dataset': dataset, 'condition': condition }),
+        data: JSON.stringify({ 'dataset': dataset, 'condition': new_condition, 'condition_w_exp': new_condition_w_exp }),
         success: function () {
-
-
             Swal.fire({
                 position: 'center',
                 icon: 'success',
@@ -34,9 +39,9 @@ function getCondition(container_id) {
         success: function (response) {
             var obj = JSON.parse(response);
             if (container_id != null)
-                $('#' + container_id).html(obj.res)
+                $('#' + container_id).html(obj.condition)
             else
-                return obj.res;
+                return obj.condition;
         },
         error: function (error) {
             console.log(error);
@@ -83,16 +88,16 @@ function tupleIsProtectedJSON(table) {
         cache: false,
         data: form_data,
         success: function (data) {
-            if (data.res == 'nofile')
+            if (data.status == 'nofile')
                 pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
 
-            else if (data.res == 'datasetexists')
+            else if (data.status == 'datasetexists')
                 pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
 
-            else if (data.res == 'notallowed')
+            else if (data.status == 'notallowed')
                 pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
             else
-                if (data.res == 'True')
+                if (data.status == 'True')
                     $('#protected-container').html('<b>Tuple is protected!</b>');
                 else
                     $('#protected-container').html('<b>Tuple is not protected!</b>');
@@ -121,13 +126,13 @@ function pairIsProtectedJSON() {
             if (data.res == 'nofile')
                 pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
 
-            else if (data.res == 'datasetexists')
+            else if (data.status == 'datasetexists')
                 pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
 
-            else if (data.res == 'notallowed')
+            else if (data.status == 'notallowed')
                 pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
             else
-                if (data.res == 'True')
+                if (data.status == 'True')
                     $('#protected-container').html('<b>Pair is protected!</b>');
                 else
                     $('#protected-container').html('<b>Pair is not protected!</b>');
@@ -151,7 +156,7 @@ function tupleIsProtected(table) {
         contentType: 'application/json',
         data: JSON.stringify({ "dataset": dataset, table: table, json: json_str }),
         success: (data) => {
-            if (data.res == 'True')
+            if (data.is_protected == 'True')
                 $('#protected-container').html('<b>Tuple is protected!</b>');
             else
                 $('#protected-container').html('<b>Tuple is not protected!</b>');
@@ -226,7 +231,7 @@ function pairIsProtected() {
         data: JSON.stringify({ 'dataset': dataset, 'json1': str1, 'json2': str2 }),
         success: function (data) {
 
-            if (data.res == 'True')
+            if (data.is_protected == 'True')
                 $('#protected-container').html('<b>Pair is protected!</b>');
             else
                 $('#protected-container').html('<b>Pair is not protected!</b>');
@@ -358,13 +363,13 @@ function uploadDataset() {
         cache: false,
         data: form_data,
         success: function (data) {
-            if (data.res == 'uploaded')
+            if (data.status == 'uploaded')
                 pretty_alert('success', 'Done!', 'Dataset has been uploaded successfully!')
 
-            else if (data.res == 'nofile')
+            else if (data.status == 'nofile')
                 pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
 
-            else if (data.res == 'datasetexists')
+            else if (data.status == 'datasetexists')
                 pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
 
             else
@@ -378,7 +383,7 @@ $(document).ready(function () {
         type: "GET",
         url: "/requests/getDatasetsNames",
         success: function (response) {
-            datasets_names_list = response.res
+            datasets_names_list = response.datasets_list
             if (datasets_names_list.length == 0) {
                 htmlRes = '<p style="color:red">No datasets found on system!</p>' +
                     '<b><p>Press the button to download the Datasets from DeepMatcher.</b></p>' +

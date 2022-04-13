@@ -4,16 +4,17 @@ import web.library.methods as methods
 d = gender.Detector(case_sensitive=False)  # to avoid creating many Detectors
 
 
-# returns True if the given value (assumed to be coming from the protected attribute) is considered protected
-# if return_condition is True, the condition will be returned as string
-def pair_is_protected(tuple=None, dataset='datasets/Test', return_condition=False, explanation=0):
-    # if the dataset has not a custom condition, then 'condition_in_file' is a None object
-    condition_in_file = methods.protectedCond(dataset)
-    # otherwise 'condition_in_file' contains the custom condition
+    # returns True if the given value (assumed to be coming from the protected attribute) is considered protected
+    # if return_condition is True, the condition will be returned as string
+def pair_is_protected(tuple=None, dataset=None, return_condition=False, explanation=0):
+   
     if(return_condition):
-        return get_condition(dataset, explanation) if condition_in_file is None else condition_in_file
+        return default_conditions[dataset] if methods.protectedCond(dataset,0) is None else methods.protectedCond(dataset,0)
     else:
-        return eval(get_condition(dataset, explanation)) if condition_in_file is None else eval(condition_in_file)
+        try:
+            return eval(default_conditions_w_exp[dataset]) if methods.protectedCond(dataset,1) is None else eval(methods.protectedCond(dataset,1))
+        except AttributeError:
+            return eval(default_conditions[dataset]) if methods.protectedCond(dataset,0) is None else eval(methods.protectedCond(dataset,0))
 
     '''elif dataset == 'DBLP-ACM': 
         if return_condition:
@@ -46,6 +47,3 @@ default_conditions_w_exp = {'Amazon-Google': "('microsoft' in str(tuple.ltable_m
                             'iTunes-Amazon': "('Dance' in str(tuple.ltable_Genre)) or ('Dance' in str(tuple.rtable_Genre))",
                             'Walmart-Amazon': "('printers' in str(tuple.ltable_category)) or ('printers' in str(tuple.rtable_category))"}
 
-
-def get_condition(dataset, explanation):
-    return default_conditions_w_exp[dataset] #'''if int(explanation) else default_conditions[dataset]'''     Returns always conditions compatible for explanation

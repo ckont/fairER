@@ -25,8 +25,7 @@ def run(data, data_path, train, valid, test, k_results):
     preds = preds.sort_values(by='match_score', ascending=False)
     # print("Initial Ranking:\n", preds[:k].to_string(index=False))
 
-    initial_pairs = [(int(a.id.split('_')[0]), int(a.id.split('_')[1]), a.match_score, util.pair_is_protected(a, data))
-                     for a in preds.itertuples()]
+    initial_pairs = [(int(a.id.split('_')[0]), int(a.id.split('_')[1]), a.match_score, util.pair_is_protected(a, data)) for a in preds.itertuples()]
 
     #############################
     # Unique Mapping Clustering
@@ -45,7 +44,7 @@ def run(data, data_path, train, valid, test, k_results):
     return original_clusters, preds
 
 
-def main(data_path, train_file, valid_file, test_file):
+def main(data_path, train_file, valid_file, test_file, k):
 
     data = os.path.basename(data_path)
     print('\n', data, '\n')
@@ -87,6 +86,6 @@ if __name__ == '__main__':
     valid_file = sys.argv[3] if args else 'joined_valid.csv'
     test_file = sys.argv[4] if args else 'joined_test.csv'
 
-    main(datasets_path, train_file, valid_file, test_file)
+    main(datasets_path, train_file, valid_file, test_file, k)
 
     

@@ -67,4 +67,4 @@ def chart(data, subplot, ylim, title="", w=True, dataset_path=os.path.join('reso
     
     plt.ylabel("Score")
     plt.xticks(ticks, attr_sorted, rotation=90)
-    plt.show()
+    #plt.show()

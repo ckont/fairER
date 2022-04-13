@@ -28,11 +28,11 @@ def apiInfo():
 
 
 
-#####################################################################
-# @parameters:                                                      #
-#          --dataset -> the dataset to get the accuracy             #
-#          --alg -> run the specific algorithm to get the accuracy  #
-#####################################################################
+########################################################################################
+# @parameters:                                                                         #
+#          --dataset -> the dataset to get the accuracy                                #
+#          --alg -> run the specific algorithm (fairER or unfair) to get the accuracy  #
+########################################################################################
 @app.route("/requests/getAccuracy")
 def getAccuracy():
     dataset = request.args.get('dataset')
@@ -97,11 +97,13 @@ def getEvaluationResults():
     if alg == 'fairER':
         explanation = request.args.get('explanation')
         methods.runFairER(dataset, explanation)
+    else:
+        methods.runUnfair(dataset) 
 
-    with open('data/json_data/evaluation_data.json') as json_file: # open the file that was created
+    with open(os.path.join('data', 'json_data', 'evaluation_data.json')) as json_file: # open the file that was created
         data = json.load(json_file) # get the data from this file
 
-    # construct the response with the evaluation results as a table in html format
+    
     accuracy = str(data['accuracy'])
     spd =  str(data['SPD'])
     eod = str(data['EOD'])
@@ -127,7 +129,7 @@ def getPreds():
     else:
         methods.runUnfair(dataset) 
 
-    with open('data/json_data/preds_data.json') as json_file: # open the file that was created
+    with open(os.path.join('data', 'json_data', 'preds_data.json')) as json_file: # open the file that was created
         data = json.load(json_file) # get the data from this file
 
     response = app.response_class(
@@ -151,7 +153,7 @@ def getClust():
     else:
         methods.runUnfair(dataset)  
 
-    with open('data/json_data/clusters_data.json') as json_file:
+    with open(os.path.join('data', 'json_data', 'clusters_data.json')) as json_file:
         data = json.load(json_file)
 
     response = app.response_class(
@@ -172,7 +174,7 @@ def getStats():
     
     methods.runStatistics(dataset)
     
-    with open('data/json_data/statistics_data.json') as json_file:
+    with open(os.path.join('data', 'json_data', 'statistics_data.json')) as json_file:
         data = json.load(json_file)
     
     response = app.response_class(
@@ -197,9 +199,9 @@ def getStats():
 def getProtectedCondition():
     dataset = request.args.get('dataset')
 
-    result = util.pair_is_protected(None, dataset, True)
+    result = util.pair_is_protected(tuple=None, dataset=dataset, return_condition=True)
     response = app.response_class(
-        response = json.dumps({'res': str(result)}),
+        response = json.dumps({'condition': str(result)}),
         mimetype = 'application/json'
     )
     return response
@@ -215,10 +217,10 @@ def getProtectedCondition():
 def getTablesAttributes():
     dataset = request.args.get('dataset')
     table = request.args.get('table')
-    attributes_json = methods.getAttributes(table, dataset)
+    attributes = methods.getAttributes(table, dataset)
     
     response = app.response_class(
-        response=attributes_json,
+        response=attributes,
         mimetype='application/json'
     )
     return response
@@ -240,7 +242,7 @@ def tupleIsProtected():
     json_obj = json.loads(json_str)
     result = methods.checkTupleProtected(dataset, table, json_obj["attributes"])
     response = app.response_class(
-        response = json.dumps({'res': str(result)}),
+        response = json.dumps({'is_protected': str(result)}),
         mimetype = 'application/json'
     )
     return response
@@ -249,7 +251,7 @@ def tupleIsProtected():
 # @parameters:                                                                   #
 #          --dataset -> the dataset that contains this tuple                     #
 #          --json1 -> a json object that contains the values of the first table  #
-#          --json1 -> a json object that contains the values of the second table #
+#          --json2 -> a json object that contains the values of the second table #
 ##################################################################################
 @app.route("/requests/pairIsProtected", methods=['POST'])
 def getPairIsProtected():
@@ -265,25 +267,29 @@ def getPairIsProtected():
     pair_is_protected = result1 or result2
 
     response = app.response_class(
-        response = json.dumps({'res': str(pair_is_protected)}),
+        response = json.dumps({'is_protected': str(pair_is_protected)}),
         mimetype = 'application/json'
     )
     return response
 
 
-####################################################################################
-# @parameters:                                                                     #
-#          --dataset -> the dataset for which the protected condition will change  #  
-#          --condition -> the new condition                                        #
-####################################################################################
+#########################################################################################
+# @parameters:                                                                          #
+#          --dataset -> the dataset for which the protected condition will change       #  
+#          --condition -> the new condition                                             #
+#          --condition_w_exp -> the new condition for the case we explanation is needed #
+#########################################################################################
 @app.route("/requests/postProtectedCondition", methods=['POST'])
 def postProtectedCondition():
     dataset = request.json['dataset']
     condition = request.json['condition']
-    methods.saveNewCond(dataset, condition)
+    condition_w_exp = request.json['condition_w_exp']
+    print(condition)
+    print(condition_w_exp)
+    methods.saveNewCond(dataset, condition, condition_w_exp)
     methods.deleteCachedData(dataset)
     response = app.response_class(
-        response = json.dumps({'res': 'succeed'}),
+        response = json.dumps({'status': 'succeed'}),
         mimetype = 'application/json'
     )
     return response
@@ -299,7 +305,7 @@ def uploadDataset():
     # check if the post request has the file part
     if 'dataset-upload-file' not in request.files:
         response = app.response_class(
-            response = json.dumps({'res': 'nofile'}),
+            response = json.dumps({'status': 'nofile'}),
             mimetype = 'application/json'
         )
     file = request.files['dataset-upload-file']
@@ -307,7 +313,7 @@ def uploadDataset():
     # empty file without a filename.
     if file.filename == '':
         response = app.response_class(
-            response = json.dumps({'res': 'nofile'}),
+            response = json.dumps({'status': 'nofile'}),
             mimetype = 'application/json'
         )
     if file and allowed_file(file.filename):
@@ -318,17 +324,17 @@ def uploadDataset():
             methods.delete_dataset_zip(filename)
             methods.read_uploaded_dataset(os.path.splitext(filename)[0])
             response = app.response_class(
-                response = json.dumps({'res': 'uploaded'}),
+                response = json.dumps({'status': 'uploaded'}),
                 mimetype = 'application/json'
             )
         else:
             response = app.response_class(
-                response = json.dumps({'res': 'datasetexists'}),
+                response = json.dumps({'status': 'datasetexists'}),
                 mimetype = 'application/json'
             )
     else:
         response = app.response_class(
-            response = json.dumps({'res': 'notallowed'}),
+            response = json.dumps({'status': 'notallowed'}),
             mimetype = 'application/json'
         )
     
@@ -340,7 +346,7 @@ def uploadDataset():
 def getDatasetsNames():
     data_names_json = methods.datasets_names_to_json()
     response = app.response_class(
-        response = json.dumps({'res': sorted(data_names_json)}),
+        response = json.dumps({'datasets_list': sorted(data_names_json)}),
         mimetype = 'application/json'
     )
     return response
@@ -351,7 +357,7 @@ def downloadDMdatasets():
     methods.download_dataset()
     methods.read_dm_datasets()
     response = app.response_class(
-        response = json.dumps({'res': 'succeed'}),
+        response = json.dumps({'status': 'succeed'}),
         mimetype = 'application/json'
     )
     return response
@@ -361,7 +367,7 @@ def tupleIsProtectedJSON():
     # check if the post request has the file part
     if 'json-upload-file' not in request.files:
         response = app.response_class(
-            response = json.dumps({'res': 'nofile'}),
+            response = json.dumps({'status': 'nofile'}),
             mimetype = 'application/json'
         )
         return response
@@ -371,7 +377,7 @@ def tupleIsProtectedJSON():
 
     if file.filename == '':
         response = app.response_class(
-            response = json.dumps({'res': 'nofile'}),
+            response = json.dumps({'status': 'nofile'}),
             mimetype = 'application/json'
         )
         return response
@@ -382,12 +388,12 @@ def tupleIsProtectedJSON():
 
         result = methods.checkTupleProtected(dataset, table, json_obj["attributes"])  
         response = app.response_class(
-            response = json.dumps({'res': str(result)}),
+            response = json.dumps({'status': str(result)}),
             mimetype = 'application/json'
         )
     else:
         response = app.response_class(
-            response = json.dumps({'res': 'notallowed'}),
+            response = json.dumps({'status': 'notallowed'}),
             mimetype = 'application/json'
         )
     
@@ -399,7 +405,7 @@ def pairIsProtectedJSON():
     # check if the post request has the file part
     if 'json-upload-file' not in request.files:
         response = app.response_class(
-            response = json.dumps({'res': 'nofile'}),
+            response = json.dumps({'status': 'nofile'}),
             mimetype = 'application/json'
         )
         return response
@@ -409,7 +415,7 @@ def pairIsProtectedJSON():
 
     if file.filename == '':
         response = app.response_class(
-            response = json.dumps({'res': 'nofile'}),
+            response = json.dumps({'status': 'nofile'}),
             mimetype = 'application/json'
         )
         return response
@@ -422,16 +428,17 @@ def pairIsProtectedJSON():
 
         pair_is_protected = result1 or result2  
         response = app.response_class( 
-            response = json.dumps({'res': str(pair_is_protected)}), 
+            response = json.dumps({'status': str(pair_is_protected)}), 
             mimetype = 'application/json'
         )
     else:
         response = app.response_class(
-            response = json.dumps({'res': 'notallowed'}),
+            response = json.dumps({'status': 'notallowed'}),
             mimetype = 'application/json'
         )
     
     return response
+
 
 @app.route("/requests/getExplanation", methods=['GET'])
 def getExplanation():

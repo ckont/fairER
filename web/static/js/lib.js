@@ -1,14 +1,85 @@
 function editCondition() {
-    getPredictions('fairER', 'general-container') //show predictions
     var htmlRes = '<div class="mb-3">' +
-        '<label for="protected-textarea" class="form-label"><b>Edit Protected Condition</b></label>' +
-        '<textarea class="form-control" id="protected-textarea" rows="3" cols="100"></textarea>' +
-        '<br><button type="button" class="btn btn-success" onclick="postProtectedCondition()">Send</button>' +
-        '</div>';
+        '<label for="old-protected-condition" class="form-label"><b>Old Protected Condition</b></label>' +
+        '<div id="old-protected-condition"></div>' +
+        '</div><br><br>';
     $('#protected-container').html(htmlRes)
-    getCondition('protected-textarea')
+    getCondition('old-protected-condition') //'<br><button type="button" class="btn btn-success" onclick="postProtectedCondition()">Send</button>' +
+    show_condition_input_fields('protected-container')
+
+    getPredictions('fairER', 'general-container') //show predictions
 }
 
+function show_condition_input_fields(container) {
+    $("#protected-container").css("display", "block");
+    var htmlRes = '<div id="change-condition-inputs">'
+    htmlRes += '<div id="left-table"><label for="left-tbl" class="form-label"><b>Left Table Attribute</b></label>'
+    htmlRes += '<select class="form-select" id="left-tbl"></select>'
+
+    htmlRes += '<label for="left-value" class="form-label"><b>Left Attribute Value</b></label>';
+    htmlRes += '<input type="text" class="form-control" id="left-value"></div>';
+
+    htmlRes += '<div id="right-table"><label for="right-tbl" class="form-label"><b>Right Table Attribute</b></label>'
+    htmlRes += '<select class="form-select" id="right-tbl"></select>'
+    htmlRes += '<label for="right-value" class="form-label"><b>Right Attribute Value</b></label>';
+    htmlRes += '<input type="text" class="form-control" id="right-value"></div>';
+
+    htmlRes += '</div><br><button type="button" class="btn btn-secondary" style="margin:0" onclick="constract_new_condition()">Constract Condition</button>'
+    htmlRes += '<div id="new-cond-container"></div>'
+    $('#' + container).append(htmlRes)
+    fill_dropdowns()
+}
+
+function fill_dropdowns() {
+    var dataset = $('#dataset-val').val()
+    $.ajax({
+        type: "GET",
+        url: "/requests/getTableAttributes?dataset=" + dataset + "&table=left",
+        contentType: "application/json",
+        dataType: 'text',
+        success: function (response) {
+            var obj = JSON.parse(response);
+            first_attr = obj.shift();
+            $('#left-tbl').html('<option value="' + first_attr + '" selected>' + first_attr + '</option>')
+
+            obj.forEach(item =>
+                $('#left-tbl').append('<option value="' + item + '">' + item + '</option>')
+            );
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+    $.ajax({
+        type: "GET",
+        url: "/requests/getTableAttributes?dataset=" + dataset + "&table=right",
+        contentType: "application/json",
+        dataType: 'text',
+        success: function (response) {
+            var obj = JSON.parse(response);
+            first_attr = obj.shift();
+            $('#right-tbl').html('<option value="' + first_attr + '" selected>' + first_attr + '</option>')
+            obj.forEach(item =>
+                $('#right-tbl').append('<option value="' + item + '">' + item + '</option>')
+            );
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+function constract_new_condition(container) {
+    left_attribute = $("#left-tbl").val();
+    left_value = $("#left-value").val();
+    right_attribute = $("#right-tbl").val();
+    right_value = $("#right-value").val();
+
+    new_condition = '("'+left_value+'" in str(tuple.left_'+left_attribute+')) or ("'+right_value+'" in str(tuple.right_'+right_attribute+'))'
+    var htmlRes = '<br><br><b>New Protected Condition</b><br>'+new_condition
+    htmlRes += '<br><br><button type="button" class="btn btn-success" style="margin:0" onclick="postProtectedCondition()">Send</button>'
+    $("#new-cond-container").html(htmlRes)
+}
 
 /* Radio button (right or left) */
 function getTableOptions() {
