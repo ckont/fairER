@@ -14,16 +14,14 @@ def run(data, data_path, train, valid, test, k_results):
     ###########
 
     # comment out after the first run (it writes output to file, which does not need to be re-written in every run)
-    if os.path.exists(data_path + '/dm_results.csv'):
-        preds = pd.read_csv(data_path + '/dm_results.csv')
-    else:
+    if not os.path.exists(data_path + '/dm_results.csv'):
         preds = dm.run(data_path, train, valid, test)  # , unlabeled_file)
-        preds.to_csv(data_path + '/dm_results.csv')
-        # print(preds)
+        preds.to_csv(data_path + '/dm_results.csv')     
 
-    # Ranking of matching results in desc. match score
+    preds = pd.read_csv(data_path + '/dm_results.csv')
+    # Ranking of matching results in desc. match score 
     preds = preds.sort_values(by='match_score', ascending=False)
-    # print("Initial Ranking:\n", preds[:k].to_string(index=False))
+    #print("Initial Ranking:\n", preds[:k_results].to_string(index=False))
 
     initial_pairs = [(int(a.id.split('_')[0]), int(a.id.split('_')[1]), a.match_score, util.pair_is_protected(a, data)) for a in preds.itertuples()]
 
