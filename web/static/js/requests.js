@@ -5,23 +5,29 @@ function postProtectedCondition() {
     right_attribute = $("#right-tbl").val();
     right_value = $("#right-value").val();
 
-    new_condition = '("'+left_value+'" in str(tuple.left_'+left_attribute+')) or ("'+right_value+'" in str(tuple.right_'+right_attribute+'))'
-    new_condition_w_exp = '("'+left_value+'" in str(tuple.ltable_'+left_attribute+')) or ("'+right_value+'" in str(tuple.rtable_'+right_attribute+'))'
+    new_condition = '("' + left_value + '" in str(tuple.left_' + left_attribute + ')) or ("' + right_value + '" in str(tuple.right_' + right_attribute + '))'
+    new_condition_w_exp = '("' + left_value + '" in str(tuple.ltable_' + left_attribute + ')) or ("' + right_value + '" in str(tuple.rtable_' + right_attribute + '))'
     var dataset = $('#dataset-val').val();
     $.ajax({
         url: '/requests/postProtectedCondition',
         type: 'POST',
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify({ 'dataset': dataset, 'condition': new_condition, 'condition_w_exp': new_condition_w_exp }),
-        success: function () {
-            Swal.fire({
-                position: 'center',
-                icon: 'success',
-                title: 'Done!',
-                text: 'Protected Condition has been changed successfully!',
-                showConfirmButton: false,
-                timer: 3000
-            })
+        success: function (response) {
+            var obj = JSON.parse(response);
+            //If there is no exception 
+            if (obj.exception == undefined) {
+                Swal.fire({
+                    position: 'center',
+                    icon: 'success',
+                    title: 'Done!',
+                    text: 'Protected Condition has been changed successfully!',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
+            }
+            //If there is an exception, print details about it
+            else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
         },
         error: function (error) {
             console.log(error);
@@ -38,10 +44,15 @@ function getCondition(container_id) {
         dataType: 'text',
         success: function (response) {
             var obj = JSON.parse(response);
-            if (container_id != null)
-                $('#' + container_id).html(obj.condition)
-            else
-                return obj.condition;
+            //If there is no exception 
+            if (obj.exception == undefined) {
+                if (container_id != null)
+                    $('#' + container_id).html(obj.condition)
+                else
+                    return obj.condition;
+            }
+            //If there is an exception, print details about it
+            else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
         },
         error: function (error) {
             console.log(error);
@@ -60,9 +71,14 @@ function getAttributes(table) {
         dataType: 'text',
         success: function (response) {
             var obj = JSON.parse(response);
-            htmlRes = tupleAttributesToInput(obj, table);
-            $('#protected-container').css('text-align', 'center')
-            $('#protected-container').html(htmlRes);
+            //If there is no exception 
+            if (obj.exception == undefined) {
+                htmlRes = tupleAttributesToInput(obj, table);
+                $('#protected-container').css('text-align', 'center')
+                $('#protected-container').html(htmlRes);
+            }
+            //If there is an exception, print details about it
+            else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
         },
         error: function (error) {
             console.log(error);
@@ -88,19 +104,25 @@ function tupleIsProtectedJSON(table) {
         cache: false,
         data: form_data,
         success: function (data) {
-            if (data.status == 'nofile')
-                pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
+            //If there is no exception 
+            if (data.exception == undefined) {
+                if (data.status == 'nofile')
+                    pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
 
-            else if (data.status == 'datasetexists')
-                pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
+                else if (data.status == 'datasetexists')
+                    pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
 
-            else if (data.status == 'notallowed')
-                pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
-            else
-                if (data.status == 'True')
-                    $('#protected-container').html('<b>Tuple is protected!</b>');
-                else
-                    $('#protected-container').html('<b>Tuple is not protected!</b>');
+                else if (data.status == 'notallowed')
+                    pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
+                else {
+                    if (data.status == 'True')
+                        $('#protected-container').html('<b>Tuple is protected!</b>');
+                    else
+                        $('#protected-container').html('<b>Tuple is not protected!</b>');
+                }
+            }
+            //If there is an exception, print details about it
+            else print_exception(data.exception_type, data.exception, data.filename, data.func_name, data.line_number)
         }
     });
 }
@@ -123,19 +145,25 @@ function pairIsProtectedJSON() {
         cache: false,
         data: form_data,
         success: function (data) {
-            if (data.res == 'nofile')
-                pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
+            //If there is no exception 
+            if (data.exception == undefined) {
+                if (data.res == 'nofile')
+                    pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
 
-            else if (data.status == 'datasetexists')
-                pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
+                else if (data.status == 'datasetexists')
+                    pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
 
-            else if (data.status == 'notallowed')
-                pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
-            else
-                if (data.status == 'True')
-                    $('#protected-container').html('<b>Pair is protected!</b>');
-                else
-                    $('#protected-container').html('<b>Pair is not protected!</b>');
+                else if (data.status == 'notallowed')
+                    pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
+                else {
+                    if (data.status == 'True')
+                        $('#protected-container').html('<b>Pair is protected!</b>');
+                    else
+                        $('#protected-container').html('<b>Pair is not protected!</b>');
+                }
+            }
+            //If there is an exception, print details about it
+            else print_exception(data.exception_type, data.exception, data.filename, data.func_name, data.line_number)
         }
     });
 }
@@ -156,10 +184,15 @@ function tupleIsProtected(table) {
         contentType: 'application/json',
         data: JSON.stringify({ "dataset": dataset, table: table, json: json_str }),
         success: (data) => {
-            if (data.is_protected == 'True')
-                $('#protected-container').html('<b>Tuple is protected!</b>');
-            else
-                $('#protected-container').html('<b>Tuple is not protected!</b>');
+            //If there is no exception 
+            if (data.exception == undefined) {
+                if (data.is_protected == 'True')
+                    $('#protected-container').html('<b>Tuple is protected!</b>');
+                else
+                    $('#protected-container').html('<b>Tuple is not protected!</b>');
+            }
+            //If there is an exception, print details about it
+            else print_exception(data.exception_type, data.exception, data.filename, data.func_name, data.line_number)
         },
         error: function (error) {
             console.log(error);
@@ -178,21 +211,28 @@ function getPairFields() {
         dataType: 'text',
         success: function (response) {
             var right_obj = JSON.parse(response);
-
-            $.ajax({
-                type: "GET",
-                url: "/requests/getTableAttributes?dataset=" + dataset + "&table=left",
-                contentType: "application/json",
-                dataType: 'text',
-                success: function (response) {
-                    var left_obj = JSON.parse(response);
-                    $('#protected-container').html(pairAttributesToInput(right_obj, left_obj));
-                },
-                error: function (error) {
-                    console.log(error);
-                }
-            });
-
+            //If there is no exception 
+            if (right_obj.exception == undefined) {
+                $.ajax({
+                    type: "GET",
+                    url: "/requests/getTableAttributes?dataset=" + dataset + "&table=left",
+                    contentType: "application/json",
+                    dataType: 'text',
+                    success: function (response) {
+                        var left_obj = JSON.parse(response);
+                        //If there is no exception 
+                        if (left_obj.exception == undefined)
+                            $('#protected-container').html(pairAttributesToInput(right_obj, left_obj));
+                        //If there is an exception, print details about it
+                        else print_exception(left_obj.exception_type, left_obj.exception, left_obj.filename, left_obj.func_name, left_obj.line_number)
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }
+            //If there is an exception, print details about it
+            else print_exception(right_obj.exception_type, right_obj.exception, right_obj.filename, right_obj.func_name, right_obj.line_number)
 
         },
         error: function (error) {
@@ -230,11 +270,15 @@ function pairIsProtected() {
         contentType: 'application/json;charset=UTF-8',
         data: JSON.stringify({ 'dataset': dataset, 'json1': str1, 'json2': str2 }),
         success: function (data) {
-
-            if (data.is_protected == 'True')
-                $('#protected-container').html('<b>Pair is protected!</b>');
-            else
-                $('#protected-container').html('<b>Pair is not protected!</b>');
+            //If there is no exception 
+            if (data.exception == undefined) {
+                if (data.is_protected == 'True')
+                    $('#protected-container').html('<b>Pair is protected!</b>');
+                else
+                    $('#protected-container').html('<b>Pair is not protected!</b>');
+            }
+            //If there is an exception, print details about it
+            else print_exception(data.exception_type, data.exception, data.filename, data.func_name, data.line_number)
         },
         error: function (error) {
             console.log(error);
@@ -252,9 +296,14 @@ function getPredictions(alg, container_id) {
         dataType: 'text',
         success: function (response) {
             var obj = JSON.parse(response);
-            var jsonData = eval(obj.preds);
-            htmlRes = predsTableBuilder(jsonData);
-            $('#' + container_id).html(htmlRes);
+            //If there is no exception 
+            if (obj.exception == undefined) {
+                var jsonData = eval(obj.preds);
+                htmlRes = predsTableBuilder(jsonData);
+                $('#' + container_id).html(htmlRes);
+            }
+            //If there is an exception, print details about it
+            else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
         },
         error: function (error) {
             console.log(error);
@@ -273,13 +322,17 @@ function getClusters(alg, container_id) {
         success: function (response) {
             let json_str = String(response).replace(/'/g, '"');
             const obj = JSON.parse(json_str);
-
-            header = ["TableA", "TableB"];
-            var body = [];
-            for (var cluster of obj.clusters) {
-                body.push(cluster);
+            //If there is no exception 
+            if (obj.exception == undefined) {
+                header = ["TableA", "TableB"];
+                var body = [];
+                for (var cluster of obj.clusters) {
+                    body.push(cluster);
+                }
+                $('#' + container_id).html(clustersTableBuilder(header, body));
             }
-            $('#' + container_id).html(clustersTableBuilder(header, body));
+            //If there is an exception, print details about it
+            else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
 
         },
         error: function (error) {
@@ -299,22 +352,30 @@ function getEvaluation(alg, arg, container_id) {
         success: function (response) {
             const obj = JSON.parse(response);
 
-            if (arg == "EvaluationResults")
-                header = ["Dataset", "Algorithm", "Accuracy", "SPD", "EOD"];
-            else
-                header = ["Dataset", "Algorithm", arg];
+            //If there is no exception 
+            if (obj.exception == undefined) {
+                if (arg == "EvaluationResults")
+                    header = ["Dataset", "Algorithm", "Accuracy", "SPD", "EOD"];
+                else
+                    header = ["Dataset", "Algorithm", arg];
 
-            if (arg == "Accuracy")
-                body = [dataset, alg, obj.accuracy];
-            else if (arg == "SPD")
-                body = [dataset, alg, obj.spd];
-            else if (arg == "EOD")
-                body = [dataset, alg, obj.eod];
-            else
-                body = [dataset, alg, obj.accuracy, obj.spd, obj.eod];
+                if (arg == "Accuracy") {
+                    alert(obj.exception)
 
-            htmlRes = tableBuilder(header, body, 'eval-table');
-            $('#' + container_id).html(htmlRes);
+                    body = [dataset, alg, obj.accuracy];
+                }
+                else if (arg == "SPD")
+                    body = [dataset, alg, obj.spd];
+                else if (arg == "EOD")
+                    body = [dataset, alg, obj.eod];
+                else
+                    body = [dataset, alg, obj.accuracy, obj.spd, obj.eod];
+
+                htmlRes = tableBuilder(header, body, 'eval-table');
+                $('#' + container_id).html(htmlRes);
+            }
+            //If there is an exception, print details about it
+            else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
         },
         error: function (error) {
             console.log(error);
@@ -333,14 +394,19 @@ function getStatistics() {
         dataType: 'text',
         success: function (response) {
             const obj = JSON.parse(response);
-            header = ["Number of Protected Matches", "Number of non-Protected Matches",
-                "Avg. Score Protected", "Agv. Score non-Protected", "Avg Score Protected Matches",
-                "Avg Score non-Protected Matches"];
-            body = [obj.num_protected_matches, obj.num_nonprotected_matches, obj.avg_score_protected,
-            obj.avg_score_nonprotected, obj.avg_score_protected_matches, obj.avg_score_nonprotected_matches];
+            //If there is no exception 
+            if (obj.exception == undefined) {
+                header = ["Number of Protected Matches", "Number of non-Protected Matches",
+                    "Avg. Score Protected", "Agv. Score non-Protected", "Avg Score Protected Matches",
+                    "Avg Score non-Protected Matches"];
+                body = [obj.num_protected_matches, obj.num_nonprotected_matches, obj.avg_score_protected,
+                obj.avg_score_nonprotected, obj.avg_score_protected_matches, obj.avg_score_nonprotected_matches];
 
-            htmlRes = tableBuilder(header, body, 'statistics-table');
-            $('#statistics-container').html(htmlRes);
+                htmlRes = tableBuilder(header, body, 'statistics-table');
+                $('#statistics-container').html(htmlRes);
+            }
+            //If there is an exception, print details about it
+            else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
         },
         error: function (error) {
             console.log(error);
@@ -363,17 +429,22 @@ function uploadDataset() {
         cache: false,
         data: form_data,
         success: function (data) {
-            if (data.status == 'uploaded')
-                pretty_alert('success', 'Done!', 'Dataset has been uploaded successfully!')
+            //If there is no exception 
+            if (data.exception == undefined) {
+                if (data.status == 'uploaded')
+                    pretty_alert('success', 'Done!', 'Dataset has been uploaded successfully!')
 
-            else if (data.status == 'nofile')
-                pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
+                else if (data.status == 'nofile')
+                    pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
 
-            else if (data.status == 'datasetexists')
-                pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
+                else if (data.status == 'datasetexists')
+                    pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
 
-            else
-                pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
+                else
+                    pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
+            }
+            //If there is an exception, print details about it
+            else print_exception(data.exception_type, data.exception, data.filename, data.func_name, data.line_number)
         }
     });
 }
@@ -383,21 +454,26 @@ $(document).ready(function () {
         type: "GET",
         url: "/requests/getDatasetsNames",
         success: function (response) {
-            datasets_names_list = response.datasets_list
-            if (datasets_names_list.length == 0) {
-                htmlRes = '<p style="color:red">No datasets found on system!</p>' +
-                    '<b><p>Press the button to download the Datasets from DeepMatcher.</b></p>' +
-                    '<button type="button" class="btn btn-success" onclick="download_dm_datasets()" style="margin-left: 40%">Download</button>';
-                $('#datasets-container').html(htmlRes)
-            }
-            else {
-                first_dataset = datasets_names_list.shift();
-                $('#dataset-val').html('<option value="' + first_dataset + '" selected>' + first_dataset + '</option>')
+            //If there is no exception 
+            if (response.exception == undefined) {
+                datasets_names_list = response.datasets_list
+                if (datasets_names_list.length == 0) {
+                    htmlRes = '<p style="color:red">No datasets found on system!</p>' +
+                        '<b><p>Press the button to download the Datasets from DeepMatcher.</b></p>' +
+                        '<button type="button" class="btn btn-success" onclick="download_dm_datasets()" style="margin-left: 40%">Download</button>';
+                    $('#datasets-container').html(htmlRes)
+                }
+                else {
+                    first_dataset = datasets_names_list.shift();
+                    $('#dataset-val').html('<option value="' + first_dataset + '" selected>' + first_dataset + '</option>')
 
-                datasets_names_list.forEach(item =>
-                    $('#dataset-val').append('<option value="' + item + '">' + item + '</option>')
-                );
+                    datasets_names_list.forEach(item =>
+                        $('#dataset-val').append('<option value="' + item + '">' + item + '</option>')
+                    );
+                }
             }
+            //If there is an exception, print details about it
+            else print_exception(response.exception_type, response.exception, response.filename, response.func_name, response.line_number)
         },
         error: function (error) {
             console.log(error);
@@ -412,17 +488,22 @@ function download_dm_datasets() {
     $.ajax({
         url: '/requests/downloadDMdatasets',
         type: 'POST',
-        success: function () {
-            $('#datasets-container').html('')
-            Swal.fire({
-                position: 'center',
-                icon: 'success',
-                title: 'Done!',
-                text: 'The page will be reloaded.',
-                showConfirmButton: false,
-                timer: 3000
-            })
-            setTimeout(function () { location.reload(); }, 3000);
+        success: function (response) {
+            //If there is no exception 
+            if (response.exception == undefined) {
+                $('#datasets-container').html('')
+                Swal.fire({
+                    position: 'center',
+                    icon: 'success',
+                    title: 'Done!',
+                    text: 'The page will be reloaded.',
+                    showConfirmButton: false,
+                    timer: 3000
+                })
+                setTimeout(function () { location.reload(); }, 3000);
+            }
+            //If there is an exception, print details about it
+            else print_exception(response.exception_type, response.exception, response.filename, response.func_name, response.line_number)
         },
         error: function (error) {
             console.log(error);
@@ -440,15 +521,20 @@ function getExplanation() {
         dataType: 'text',
         success: function (response) {
             const obj = JSON.parse(response);
-            var image1 = new Image();
-            image1.src = 'data:image/png;base64,'+obj.base64_1;
-            image1.id = 'explanation-img'
-            $('#fairer-container').html(image1);
+            //If there is no exception 
+            if (obj.exception == undefined) {
+                var image1 = new Image();
+                image1.src = 'data:image/png;base64,' + obj.base64_1;
+                image1.id = 'explanation-img'
+                $('#fairer-container').html(image1);
 
-            var image2 = new Image();
-            image2.src = 'data:image/png;base64,'+obj.base64_2;
-            image2.id = 'explanation-img'
-            $('#fairer-container').append(image2);
+                var image2 = new Image();
+                image2.src = 'data:image/png;base64,' + obj.base64_2;
+                image2.id = 'explanation-img'
+                $('#fairer-container').append(image2);
+            }
+            //If there is an exception, print details about it
+            else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
         },
         error: function (error) {
             console.log(error);

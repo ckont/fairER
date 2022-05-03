@@ -75,8 +75,8 @@ function constract_new_condition(container) {
     right_attribute = $("#right-tbl").val();
     right_value = $("#right-value").val();
 
-    new_condition = '("'+left_value+'" in str(tuple.left_'+left_attribute+')) or ("'+right_value+'" in str(tuple.right_'+right_attribute+'))'
-    var htmlRes = '<br><br><b>New Protected Condition</b><br>'+new_condition
+    new_condition = '("' + left_value + '" in str(tuple.left_' + left_attribute + ')) or ("' + right_value + '" in str(tuple.right_' + right_attribute + '))'
+    var htmlRes = '<br><br><b>New Protected Condition</b><br>' + new_condition
     htmlRes += '<br><br><button type="button" class="btn btn-success" style="margin:0" onclick="postProtectedCondition()">Send</button>'
     $("#new-cond-container").html(htmlRes)
 }
@@ -301,6 +301,21 @@ function clearPrefix(str) {
         return str.substring(6);
     else
         return str.substring(5);
+}
+
+function print_exception(type, exception, file, func, line) {
+    exception_details = '<b>Exception Type:</b> ' + type.replace(/<|>/g, '') +
+                        '<br><b>Exception:</b> ' + exception +
+                        '<br><b>File Name:</b> ' + file +
+                        '<br><b>Function Name:</b> ' + func +
+                        '<br><b>Line Number:</b> ' + line
+    Swal.fire({
+        icon: 'error',
+        title: 'Error...',
+        html: exception_details
+    }).then(() => {
+          location.reload();
+     })
 }
 
 function pretty_alert(icon, title, text) {
