@@ -446,3 +446,20 @@ def construct_cond(left_attribute, left_func, left_value, logical_op, right_attr
             right_part = '(\''+right_value+'\' '+right_func+' str(tuple.rtable_'+right_attribute+'))'
 
     return left_part+' '+logical_op+' '+right_part 
+
+def delete_dataset(dataset):
+    cur_dir = os.path.abspath(".")
+    parent_dir = Path(os.getcwd()).parent.absolute()
+    os.chdir(parent_dir)
+    
+    path = os.path.join('resources', 'Datasets', dataset)
+    if os.path.isdir(path):
+        shutil.rmtree(path)
+        os.chdir(cur_dir) 
+        return True
+    else:
+        os.chdir(cur_dir) 
+        return False
+    
+
+    

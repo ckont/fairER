@@ -1,3 +1,29 @@
+function deleteDataset(dataset) {
+    $.ajax({
+        type: 'DELETE',
+        url: "/requests/deleteDataset?dataset=" + dataset,
+        contentType: "application/json",
+        dataType: 'text',
+        success: function (response) {
+            var obj = response;
+            //If there is no exception 
+            if (obj.exception == undefined) {
+                Swal.fire(
+                    'Deleted!',
+                    '<b>"'+dataset+'"</b> has been deleted.',
+                    'success'
+                )
+                setTimeout(function () { location.reload(); }, 3500);
+            }
+            //If there is an exception, print details about it
+            else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
 function postProtectedCondition() {
     left_attribute = $("#left-tbl").val();
     left_func = $("#left-func").val();
@@ -57,9 +83,9 @@ function getCondition(container_id) {
             var obj = JSON.parse(response);
             //If there is no exception 
             if (obj.exception == undefined) {
-                if (container_id != null){
+                if (container_id != null) {
                     let hrmlRes = '<label for="condition" class="form-label"><b>Condition:</b></label>'
-                    hrmlRes += '<p id="condition">&emsp;' + obj.condition +'</p>'
+                    hrmlRes += '<p id="condition">&emsp;' + obj.condition + '</p>'
                     $('#' + container_id).html(hrmlRes)
                 }
                 else
@@ -454,7 +480,7 @@ function uploadDataset() {
 
                 else
                     pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
-                setTimeout(function () { location.reload(); }, 4000);
+                setTimeout(function () { location.reload(); }, 3000);
             }
             //If there is an exception, print details about it
             else print_exception(data.exception_type, data.exception, data.filename, data.func_name, data.line_number)

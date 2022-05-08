@@ -25,15 +25,15 @@ body {
 }
 
 #datasets-container {
-    max-width: 1000px;
+    max-width: 1100px;
 }
 #select-dataset-label {
-    margin-left: 160px; 
+    margin-left: 110px; 
 }
-#upload-dataset-btn, #dataset-statistics-btn {
+#upload-dataset-btn, #dataset-statistics-btn, #delete-dataset-btn {
     width: 30%;
 }
-#dataset-statistics-btn {
+#upload-dataset-btn, #delete-dataset-btn {
     margin-left: 0%;
 }
 #btnGroupDrop1 {
@@ -96,7 +96,7 @@ hr {
 #upload-dataset input {
     width: 50%;
 }
-
+#protected-container
 #upload-instructions {
     background-color: rgb(248, 243, 211);
     border-radius: 25px;

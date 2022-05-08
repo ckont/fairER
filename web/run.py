@@ -679,7 +679,17 @@ def getExplanation():
         )
         return response
 
+@app.route("/requests/deleteDataset", methods=['DELETE'])
+def deleteDataset():
 
+        dataset = request.args.get('dataset')   
+        status = methods.delete_dataset(dataset)
+        response = app.response_class(
+                response = json.dumps({'status': str(status)}),
+                mimetype = 'application/json'
+        )
+        return response
+    
 
 
 if __name__ == "__main__":
