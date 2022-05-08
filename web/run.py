@@ -36,29 +36,17 @@ def apiInfo():
 ########################################################################################
 @app.route("/requests/getAccuracy")
 def getAccuracy():
-    try:
-        dataset = request.args.get('dataset')
-        alg = request.args.get('alg')
-        explanation = 0
-        accuracy = methods.getAccuracy(alg, dataset, explanation)
+    dataset = request.args.get('dataset')
+    alg = request.args.get('alg')
+    explanation = request.args.get('explanation')
+    accuracy = methods.getAccuracy(alg, dataset, explanation)
         
-        response = app.response_class(
-            response=json.dumps({'accuracy': accuracy}),
-            mimetype='application/json'
-        )
-        return response
-    except Exception as e:
-        exception_type, exception_object, exception_traceback = sys.exc_info()
-        filename = exception_traceback.tb_frame.f_code.co_filename
-        line_number = exception_traceback.tb_lineno
-        func_name = inspect.stack()[0][3] 
-        response = app.response_class(
-            response=json.dumps({'exception_type': str(exception_type), 'exception': str(e),
-                                'func_name': str(func_name+'()'), 'filename': str(filename),    
-                                'line_number': str(line_number)}),
-            mimetype='application/json'
-        )
-        return response
+    response = app.response_class(
+        response=json.dumps({'accuracy': accuracy}),
+        mimetype='application/json'
+    )
+    return response
+
 
 
 ###############################################################
@@ -421,10 +409,16 @@ def getPairIsProtected():
 def postProtectedCondition():
     try:
         dataset = request.json['dataset']
-        condition = request.json['condition']
-        condition_w_exp = request.json['condition_w_exp']
-        print(condition)
-        print(condition_w_exp)
+        left_attribute = request.json['left_attribute']
+        left_func = request.json['left_func']
+        left_value = request.json['left_value']
+        logical_op = request.json['logical_op']
+        right_attribute = request.json['right_attribute']
+        right_func = request.json['right_func']
+        right_value = request.json['right_value']
+
+        condition = methods.construct_cond(left_attribute, left_func, left_value, logical_op, right_attribute, right_func, right_value, 0)
+        condition_w_exp = methods.construct_cond(left_attribute, left_func, left_value, logical_op, right_attribute, right_func, right_value, 1)
         methods.saveNewCond(dataset, condition, condition_w_exp)
         methods.deleteCachedData(dataset)
         response = app.response_class(

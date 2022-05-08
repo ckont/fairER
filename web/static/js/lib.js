@@ -7,7 +7,7 @@ function editCondition() {
     getCondition('old-protected-condition') //'<br><button type="button" class="btn btn-success" onclick="postProtectedCondition()">Send</button>' +
     show_condition_input_fields('protected-container')
 
-    getPredictions('fairER', 'general-container') //show predictions
+    //getPredictions('fairER', 'general-container') //show predictions
 }
 
 function show_condition_input_fields(container) {
@@ -16,16 +16,36 @@ function show_condition_input_fields(container) {
     htmlRes += '<div id="left-table"><label for="left-tbl" class="form-label"><b>Left Table Attribute</b></label>'
     htmlRes += '<select class="form-select" id="left-tbl"></select>'
 
+    htmlRes += '<select class="form-select" id="left-func" style="margin-top:10%; margin-bottom:10%">'
+        + '<option value="in">contains</option>'
+        + '<option value="startswith">starts with</option>'
+        + '<option value="==">is</option>'
+        + '</select>'
+
     htmlRes += '<label for="left-value" class="form-label"><b>Left Attribute Value</b></label>';
     htmlRes += '<input type="text" class="form-control" id="left-value"></div>';
 
+    htmlRes += '<div id="logical-operator-container" style="margin-top:2%; margin-left:10%; margin-right:10%">'
+    htmlRes += '<select class="form-select" id="logical-operator">'
+        + '<option value="or">Or</option>'
+        + '<option value="and">And</option>'
+        + '</select>'
+    htmlRes += '</div>'
+
+
     htmlRes += '<div id="right-table"><label for="right-tbl" class="form-label"><b>Right Table Attribute</b></label>'
     htmlRes += '<select class="form-select" id="right-tbl"></select>'
+
+    htmlRes += '<select class="form-select" id="right-func" style="margin-top:10%; margin-bottom:10%">'
+        + '<option value="in">contains</option>'
+        + '<option value="startswith">starts with</option>'
+        + '<option value="==">is</option>'
+        + '</select>'
+
     htmlRes += '<label for="right-value" class="form-label"><b>Right Attribute Value</b></label>';
     htmlRes += '<input type="text" class="form-control" id="right-value"></div>';
 
-    htmlRes += '</div><br><button type="button" class="btn btn-secondary" style="margin:0" onclick="constract_new_condition()">Constract Condition</button>'
-    htmlRes += '<div id="new-cond-container"></div>'
+    htmlRes += '</div><br><button type="button" class="btn btn-success" style="margin:0" onclick="postProtectedCondition()">Save new condition</button>'
     $('#' + container).append(htmlRes)
     fill_dropdowns()
 }
@@ -67,18 +87,6 @@ function fill_dropdowns() {
             console.log(error);
         }
     });
-}
-
-function constract_new_condition(container) {
-    left_attribute = $("#left-tbl").val();
-    left_value = $("#left-value").val();
-    right_attribute = $("#right-tbl").val();
-    right_value = $("#right-value").val();
-
-    new_condition = '("' + left_value + '" in str(tuple.left_' + left_attribute + ')) or ("' + right_value + '" in str(tuple.right_' + right_attribute + '))'
-    var htmlRes = '<br><br><b>New Protected Condition</b><br>' + new_condition
-    htmlRes += '<br><br><button type="button" class="btn btn-success" style="margin:0" onclick="postProtectedCondition()">Send</button>'
-    $("#new-cond-container").html(htmlRes)
 }
 
 /* Radio button (right or left) */
@@ -305,17 +313,17 @@ function clearPrefix(str) {
 
 function print_exception(type, exception, file, func, line) {
     exception_details = '<b>Exception Type:</b> ' + type.replace(/<|>/g, '') +
-                        '<br><b>Exception:</b> ' + exception +
-                        '<br><b>File Name:</b> ' + file +
-                        '<br><b>Function Name:</b> ' + func +
-                        '<br><b>Line Number:</b> ' + line
+        '<br><b>Exception:</b> ' + exception +
+        '<br><b>File Name:</b> ' + file +
+        '<br><b>Function Name:</b> ' + func +
+        '<br><b>Line Number:</b> ' + line
     Swal.fire({
         icon: 'error',
         title: 'Error...',
         html: exception_details
     }).then(() => {
-          location.reload();
-     })
+        location.reload();
+    })
 }
 
 function pretty_alert(icon, title, text) {

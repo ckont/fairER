@@ -1,20 +1,29 @@
 function postProtectedCondition() {
-
     left_attribute = $("#left-tbl").val();
+    left_func = $("#left-func").val();
     left_value = $("#left-value").val();
+    logical_op = $("#logical-operator").val();
     right_attribute = $("#right-tbl").val();
+    right_func = $("#right-func").val();
     right_value = $("#right-value").val();
 
-    new_condition = '("' + left_value + '" in str(tuple.left_' + left_attribute + ')) or ("' + right_value + '" in str(tuple.right_' + right_attribute + '))'
-    new_condition_w_exp = '("' + left_value + '" in str(tuple.ltable_' + left_attribute + ')) or ("' + right_value + '" in str(tuple.rtable_' + right_attribute + '))'
     var dataset = $('#dataset-val').val();
     $.ajax({
         url: '/requests/postProtectedCondition',
         type: 'POST',
         contentType: "application/json; charset=utf-8",
-        data: JSON.stringify({ 'dataset': dataset, 'condition': new_condition, 'condition_w_exp': new_condition_w_exp }),
+        data: JSON.stringify({
+            'dataset': dataset,
+            'left_attribute': left_attribute,
+            'left_func': left_func,
+            'left_value': left_value,
+            'logical_op': logical_op,
+            'right_attribute': right_attribute,
+            'right_func': right_func,
+            'right_value': right_value
+        }),
         success: function (response) {
-            var obj = JSON.parse(response);
+            var obj = response;
             //If there is no exception 
             if (obj.exception == undefined) {
                 Swal.fire({
@@ -25,6 +34,7 @@ function postProtectedCondition() {
                     showConfirmButton: false,
                     timer: 3000
                 })
+                setTimeout(function () { location.reload(); }, 3500);
             }
             //If there is an exception, print details about it
             else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
@@ -359,11 +369,8 @@ function getEvaluation(alg, arg, container_id) {
                 else
                     header = ["Dataset", "Algorithm", arg];
 
-                if (arg == "Accuracy") {
-                    alert(obj.exception)
-
+                if (arg == "Accuracy")
                     body = [dataset, alg, obj.accuracy];
-                }
                 else if (arg == "SPD")
                     body = [dataset, alg, obj.spd];
                 else if (arg == "EOD")
@@ -442,6 +449,7 @@ function uploadDataset() {
 
                 else
                     pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
+                setTimeout(function () { location.reload(); }, 4000);
             }
             //If there is an exception, print details about it
             else print_exception(data.exception_type, data.exception, data.filename, data.func_name, data.line_number)

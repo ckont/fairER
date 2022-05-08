@@ -294,16 +294,17 @@ def delete_dataset_zip(filename):
 
 def datasets_names_to_json():
     datasets_list = []
-
-    cur_dir = os.path.abspath(".")
-    parent_dir = Path(os.getcwd()).parent.absolute()
-    os.chdir(parent_dir)
+    
+    foldername = os.path.basename(os.getcwd())
+    if foldername == 'web':
+        parent_dir = Path(os.getcwd()).parent.absolute()
+        os.chdir(parent_dir)
     rootdir = os.path.join('resources', 'Datasets')
     for path in Path(rootdir).iterdir():
         if path.is_dir():
             datasets_list.append(os.path.basename(path))
     
-    os.chdir(cur_dir)
+    os.chdir(os.path.join(os.getcwd(),'web'))
     return datasets_list
 
 def download_dataset():
@@ -420,3 +421,28 @@ def explanation_exist(dataset):
     exists = os.path.exists(path_to_figure)
     os.chdir(cur_dir)
     return exists
+
+
+def construct_cond(left_attribute, left_func, left_value, logical_op, right_attribute, right_func, right_value, explanation):
+    if explanation == 0:
+        if left_func == 'startswith': 
+            left_part = '(str(tuple.left_'+left_attribute+').startswith(\''+left_value+'\'))'
+        else:
+            left_part = '(\''+left_value+'\' '+left_func+' str(tuple.left_'+left_attribute+'))'
+
+        if right_func == 'startswith': 
+            right_part = '(str(tuple.right_'+right_attribute+').startswith(\''+right_value+'\'))'
+        else:
+            right_part = '(\''+right_value+'\' '+right_func+' str(tuple.right_'+right_attribute+'))'
+    else:
+        if left_func == 'startswith': 
+            left_part = '(str(tuple.ltable_'+left_attribute+').startswith(\''+left_value+'\'))'
+        else:
+            left_part = '(\''+left_value+'\' '+left_func+' str(tuple.ltable_'+left_attribute+'))'
+
+        if right_func == 'startswith': 
+            right_part = '(str(tuple.rtable_'+right_attribute+').startswith(\''+right_value+'\'))'
+        else:
+            right_part = '(\''+right_value+'\' '+right_func+' str(tuple.rtable_'+right_attribute+'))'
+
+    return left_part+' '+logical_op+' '+right_part 

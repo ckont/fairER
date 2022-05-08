@@ -9,7 +9,7 @@ d = gender.Detector(case_sensitive=False)  # to avoid creating many Detectors
 def pair_is_protected(tuple=None, dataset=None, return_condition=False, explanation=0):
    
     if(return_condition):
-        return default_conditions[dataset] if methods.protectedCond(dataset,0) is None else methods.protectedCond(dataset,0)
+        return default_conditions.get(dataset) if methods.protectedCond(dataset,0) is None else methods.protectedCond(dataset,0)
     else:
         try:
             return eval(default_conditions_w_exp[dataset]) if methods.protectedCond(dataset,1) is None else eval(methods.protectedCond(dataset,1))

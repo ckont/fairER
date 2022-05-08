@@ -181,9 +181,6 @@ table tbody tr:nth-of-type(even) {
 #left-table, #right-table {
     display: block;
 }
-#left-table {
-    margin-right: 7%;
-}
 
 /* That cute spinning thing */
 .loader {
