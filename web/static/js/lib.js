@@ -1,8 +1,22 @@
+function has_condition(dataset){
+    if(datasets_without_condition.includes(dataset))
+        return true
+    else{
+        Swal.fire({
+            icon: 'info',
+            title: 'Oops...',
+            text: 'Can\'t perform this operation because there is no protected condition for this dataset yet!',
+            footer: 'Open "Protected Tuples" tab, then press "Edit Condition" button and give the condition of your choice.'
+        })
+        return false
+    } 
+}
+
 function deleteDatasetMessage() {
     var dataset = $('#dataset-val').val();
     Swal.fire({
         title: 'Are you sure?',
-        html: "You are going to delete dataset <b>\""+dataset+"\"</b>. You won't be able to revert this!",
+        html: "You are going to delete dataset <b>\"" + dataset + "\"</b>. You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -391,3 +405,5 @@ function pretty_alert(icon, title, text) {
         timer: 3000
     })
 }
+
+var datasets_without_condition = [];

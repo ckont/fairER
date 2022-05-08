@@ -10,7 +10,7 @@ function deleteDataset(dataset) {
             if (obj.exception == undefined) {
                 Swal.fire(
                     'Deleted!',
-                    '<b>"'+dataset+'"</b> has been deleted.',
+                    '<b>"' + dataset + '"</b> has been deleted.',
                     'success'
                 )
                 setTimeout(function () { location.reload(); }, 3500);
@@ -88,8 +88,10 @@ function getCondition(container_id) {
                     hrmlRes += '<p id="condition">&emsp;' + obj.condition + '</p>'
                     $('#' + container_id).html(hrmlRes)
                 }
-                else
+                else{
+
                     return obj.condition;
+                }
             }
             //If there is an exception, print details about it
             else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
@@ -126,6 +128,10 @@ function getAttributes(table) {
     });
 }
 function tupleIsProtectedJSON(table) {
+    
+    if (has_condition() == false) 
+        return;  
+
     var dataset = $('#dataset-val').val()
 
     var form_data = new FormData($('#json-upload-form')[0]);
@@ -168,6 +174,10 @@ function tupleIsProtectedJSON(table) {
 }
 
 function pairIsProtectedJSON() {
+   
+    if (has_condition() == false) 
+        return;  
+
     var dataset = $('#dataset-val').val()
 
     var form_data = new FormData($('#json-upload-form')[0]);
@@ -209,6 +219,10 @@ function pairIsProtectedJSON() {
 }
 
 function tupleIsProtected(table) {
+   
+    if (has_condition() == false) 
+        return;  
+
     var dataset = $('#dataset-val').val()
     var json_str = '{ "attributes" : [';
 
@@ -241,6 +255,10 @@ function tupleIsProtected(table) {
 }
 
 function getPairFields() {
+   
+    if (has_condition() == false) 
+        return;  
+
     $("#protected-container").css("display", "flex");
     $('#general-container').html('')
     var dataset = $('#dataset-val').val();
@@ -283,6 +301,10 @@ function getPairFields() {
 }
 
 function pairIsProtected() {
+   
+    if (has_condition() == false) 
+        return;  
+
     var dataset = $('#dataset-val').val()
 
     //Build a json with all the data from the form
@@ -328,6 +350,10 @@ function pairIsProtected() {
 }
 
 function getPredictions(alg, container_id) {
+   
+    if (has_condition() == false) 
+        return;  
+
     var dataset = $('#dataset-val').val()
     $('#' + container_id).html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
     $.ajax({
@@ -353,6 +379,10 @@ function getPredictions(alg, container_id) {
 }
 
 function getClusters(alg, container_id) {
+   
+    if (has_condition() == false) 
+        return;  
+
     var dataset = $('#dataset-val').val();
     $('#' + container_id).html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
     $.ajax({
@@ -383,6 +413,10 @@ function getClusters(alg, container_id) {
 }
 
 function getEvaluation(alg, arg, container_id) {
+    
+    if (has_condition() == false) 
+        return;  
+
     $('#' + container_id).html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
     var dataset = $('#dataset-val').val()
     $.ajax({
@@ -422,6 +456,10 @@ function getEvaluation(alg, arg, container_id) {
 }
 
 function getStatistics() {
+
+    if (has_condition() == false) 
+        return;  
+
     $('#datasets-info-container').html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
     var dataset = $('#dataset-val').val()
 
@@ -509,6 +547,12 @@ $(document).ready(function () {
                     datasets_names_list.forEach(item =>
                         $('#dataset-val').append('<option value="' + item + '">' + item + '</option>')
                     );
+                    
+                    
+                    datasets_without_condition = response.datasets_without_condition
+                    datasets_without_condition.forEach(item =>
+                        datasets_without_condition.push(item)
+                    );
                 }
             }
             //If there is an exception, print details about it
@@ -551,6 +595,10 @@ function download_dm_datasets() {
 }
 
 function getExplanation() {
+       
+    if (has_condition() == false) 
+        return;  
+
     $('#fairer-container').html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
     var dataset = $('#dataset-val').val()
 

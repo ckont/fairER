@@ -307,6 +307,40 @@ def datasets_names_to_json():
     os.chdir(os.path.join(os.getcwd(),'web'))
     return datasets_list
 
+
+def datasets_without_condition_to_json():
+    non_deepmatcher_datasets = []
+    datasets_without_condition = []
+    deepmatcher_datasets = ["DBLP-ACM", "Amazon-Google", "iTunes-Amazon", "Beer", "Fodors-Zagats", "Walmart-Amazon", "DBLP-GoogleScholar"]
+    datasets_list = datasets_names_to_json()
+    for item in datasets_list:
+        if item not in deepmatcher_datasets:
+            non_deepmatcher_datasets.append(item)
+
+    pickle_path = os.path.join('data', 'pickle_data', 'protected_conditions.pkl')
+
+    if os.path.exists(pickle_path) and os.path.getsize(pickle_path) > 0:
+        with open(pickle_path, 'rb') as pkl_file:
+            data = pickle.load(pkl_file)
+            for item in non_deepmatcher_datasets:
+                if item not in data:
+                    datasets_without_condition.append(item)
+    return datasets_without_condition
+
+
+    
+
+
+
+
+
+
+    return datasets_without_condition
+    
+    
+    os.chdir(os.path.join(os.getcwd(),'web'))
+    return datasets_list
+
 def download_dataset():
     Beer_url = 'http://pages.cs.wisc.edu/~anhai/data1/deepmatcher_data/Structured/Beer/beer_exp_data.zip'
     downloaded_obj = requests.get(Beer_url)
@@ -452,14 +486,37 @@ def delete_dataset(dataset):
     parent_dir = Path(os.getcwd()).parent.absolute()
     os.chdir(parent_dir)
     
+
+
     path = os.path.join('resources', 'Datasets', dataset)
     if os.path.isdir(path):
         shutil.rmtree(path)
         os.chdir(cur_dir) 
+        delete_condition_from_file(dataset)
         return True
     else:
         os.chdir(cur_dir) 
         return False
     
+def delete_condition_from_file(dataset):
+    data = {}
+    data_w_exp = {}
+    pickle_path = os.path.join('data', 'pickle_data', 'protected_conditions.pkl')
+    pickle_w_exp_path = os.path.join('data', 'pickle_data', 'protected_conditions_w_exp.pkl')
 
+    if os.path.exists(pickle_path) and os.path.getsize(pickle_path) > 0:
+        with open(pickle_path, 'rb') as pkl_file:
+            data = pickle.load(pkl_file)
+        with open(pickle_w_exp_path, 'rb') as pkl_file_w_exp:
+            data_w_exp = pickle.load(pkl_file_w_exp)
+
+    if dataset in data:
+        del data[dataset]
+    if dataset in data_w_exp:
+        del data_w_exp[dataset]
+
+    with open(pickle_path, 'wb') as pkl_file:
+        pickle.dump(data, pkl_file, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(pickle_w_exp_path, 'wb') as pkl_file_w_exp:
+        pickle.dump(data_w_exp, pkl_file_w_exp, protocol=pickle.HIGHEST_PROTOCOL)
     
