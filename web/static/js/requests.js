@@ -46,6 +46,7 @@ function postProtectedCondition() {
 }
 
 function getCondition(container_id) {
+    $("#protected-container").css("display", "flex");
     var dataset = $('#dataset-val').val();
     $.ajax({
         type: "GET",
@@ -56,8 +57,11 @@ function getCondition(container_id) {
             var obj = JSON.parse(response);
             //If there is no exception 
             if (obj.exception == undefined) {
-                if (container_id != null)
-                    $('#' + container_id).html(obj.condition)
+                if (container_id != null){
+                    let hrmlRes = '<label for="condition" class="form-label"><b>Condition:</b></label>'
+                    hrmlRes += '<p id="condition">&emsp;' + obj.condition +'</p>'
+                    $('#' + container_id).html(hrmlRes)
+                }
                 else
                     return obj.condition;
             }
@@ -211,6 +215,7 @@ function tupleIsProtected(table) {
 }
 
 function getPairFields() {
+    $("#protected-container").css("display", "flex");
     $('#general-container').html('')
     var dataset = $('#dataset-val').val();
 
@@ -298,7 +303,7 @@ function pairIsProtected() {
 
 function getPredictions(alg, container_id) {
     var dataset = $('#dataset-val').val()
-    $('#' + container_id).html('<div class="loader"></div>')
+    $('#' + container_id).html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
     $.ajax({
         type: "GET",
         url: "/requests/getPreds?alg=" + alg + "&dataset=" + dataset + "&explanation=1",
@@ -323,7 +328,7 @@ function getPredictions(alg, container_id) {
 
 function getClusters(alg, container_id) {
     var dataset = $('#dataset-val').val();
-    $('#' + container_id).html('<div class="loader"></div>')
+    $('#' + container_id).html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
     $.ajax({
         type: "GET",
         url: "/requests/getClusters?alg=" + alg + "&dataset=" + dataset + "&explanation=1",
@@ -352,7 +357,7 @@ function getClusters(alg, container_id) {
 }
 
 function getEvaluation(alg, arg, container_id) {
-    $('#' + container_id).html('<div class="loader"></div>')
+    $('#' + container_id).html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
     var dataset = $('#dataset-val').val()
     $.ajax({
         type: "GET",
@@ -391,7 +396,7 @@ function getEvaluation(alg, arg, container_id) {
 }
 
 function getStatistics() {
-    $('#statistics-container').html('<div class="loader"></div>')
+    $('#datasets-info-container').html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
     var dataset = $('#dataset-val').val()
 
     $.ajax({
@@ -410,7 +415,7 @@ function getStatistics() {
                 obj.avg_score_nonprotected, obj.avg_score_protected_matches, obj.avg_score_nonprotected_matches];
 
                 htmlRes = tableBuilder(header, body, 'statistics-table');
-                $('#statistics-container').html(htmlRes);
+                $('#datasets-info-container').html(htmlRes);
             }
             //If there is an exception, print details about it
             else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
@@ -520,7 +525,7 @@ function download_dm_datasets() {
 }
 
 function getExplanation() {
-    $('#fairer-container').html('<div class="loader"></div>')
+    $('#fairer-container').html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
     var dataset = $('#dataset-val').val()
 
     $.ajax({

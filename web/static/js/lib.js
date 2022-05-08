@@ -1,13 +1,44 @@
+function uploadDatasetInfo() {
+    var htmlRes = '<div id="upload-dataset">'
+        + '<div id="upload-instructions">'
+        + '<p><b>Instructions to upload your dataset</b></p>'
+        + '<ol>'
+        + '<li>The dataset should be a zip file</li>'
+        + '<li>The zip file name will be the name of the dataset</li>'
+        + '<li>The zip file should contain the following (5) files (no sub-folders!)'
+        + '<ul>'
+        + '<li>tableA.csv</li>'
+        + '<li>tableB.csv</li>'
+        + '<li>test.csv</li>'
+        + '<li>valid.csv</li>'
+        + '<li>train.csv</li>'
+        + '</ul>'
+        + '</li>'
+        + '<li>Your dataset should be structured as <a'
+        + 'href="https://github.com/anhaidgroup/deepmatcher/blob/master/Datasets.md"'
+        + 'target="_blank">Deepmatcher Datasets</a></li>'
+        + '<li>Once you upload your dataset, you will be able to select it on the dataset selection dropdown</li>'
+        + '</ol>'
+        + '</div>'
+        + '<div class="mb-3">'
+        + '<form enctype="multipart/form-data" id="dataset-upload-form">'
+        + '<label for="dataset-upload-file" class="form-label">Upload your dataset</label>'
+        + '<input class="form-control" name="dataset-upload-file" type="file" id="dataset-upload-file" accept=".zip">'
+        + '<button type="button" class="btn btn-success" onclick="uploadDataset()">Upload</button>'
+        + '</form>'
+        + '</div>'
+        + '</div>'
+    $('#datasets-info-container').html(htmlRes)
+}
+
 function editCondition() {
     var htmlRes = '<div class="mb-3">' +
-        '<label for="old-protected-condition" class="form-label"><b>Old Protected Condition</b></label>' +
         '<div id="old-protected-condition"></div>' +
         '</div><br><br>';
     $('#protected-container').html(htmlRes)
-    getCondition('old-protected-condition') //'<br><button type="button" class="btn btn-success" onclick="postProtectedCondition()">Send</button>' +
+    getCondition('old-protected-condition')
     show_condition_input_fields('protected-container')
-
-    //getPredictions('fairER', 'general-container') //show predictions
+    //getPredictions('fairER', 'general-container') //show predictions //TODO only when predictions are already computed
 }
 
 function show_condition_input_fields(container) {
@@ -91,6 +122,7 @@ function fill_dropdowns() {
 
 /* Radio button (right or left) */
 function getTableOptions() {
+    $("#protected-container").css("display", "flex");
     $('#general-container').html('')
     var htmlRes = '<b>Table:</b><div class="form-check">' +
         '<input class="form-check-input" type="radio" id="left-radio" onclick="getAttributes(\'left\')">' +
