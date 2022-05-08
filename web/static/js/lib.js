@@ -1,7 +1,6 @@
-function has_condition(dataset){
-    if(datasets_without_condition.includes(dataset))
-        return true
-    else{
+function has_condition() {
+    var dataset = $('#dataset-val').val();
+    if (datasets_without_condition.includes(dataset)) {
         Swal.fire({
             icon: 'info',
             title: 'Oops...',
@@ -9,7 +8,9 @@ function has_condition(dataset){
             footer: 'Open "Protected Tuples" tab, then press "Edit Condition" button and give the condition of your choice.'
         })
         return false
-    } 
+    }
+    else
+        return true
 }
 
 function deleteDatasetMessage() {
@@ -80,6 +81,8 @@ function editCondition() {
 
 function show_condition_input_fields(container) {
     $("#protected-container").css("display", "block");
+    $("#protected-container").css("display", "block");
+    $("#protected-container").css("text-align", "left");
     var htmlRes = '<div id="change-condition-inputs">'
     htmlRes += '<div id="left-table"><label for="left-tbl" class="form-label"><b>Left Table Attribute</b></label>'
     htmlRes += '<select class="form-select" id="left-tbl"></select>'
@@ -115,6 +118,7 @@ function show_condition_input_fields(container) {
 
     htmlRes += '</div><br><button type="button" class="btn btn-success" style="margin:0" onclick="postProtectedCondition()">Save new condition</button>'
     $('#' + container).append(htmlRes)
+    $("#protected-container").css("margin-left", "25%");
     fill_dropdowns()
 }
 
@@ -160,6 +164,7 @@ function fill_dropdowns() {
 /* Radio button (right or left) */
 function getTableOptions() {
     $("#protected-container").css("display", "flex");
+    $("#protected-container").css("margin-left", "0");
     $('#general-container').html('')
     var htmlRes = '<b>Table:</b><div class="form-check">' +
         '<input class="form-check-input" type="radio" id="left-radio" onclick="getAttributes(\'left\')">' +

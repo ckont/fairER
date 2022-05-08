@@ -73,6 +73,7 @@ function postProtectedCondition() {
 
 function getCondition(container_id) {
     $("#protected-container").css("display", "flex");
+    $("#protected-container").css("margin-left", "0");
     var dataset = $('#dataset-val').val();
     $.ajax({
         type: "GET",
@@ -260,6 +261,7 @@ function getPairFields() {
         return;  
 
     $("#protected-container").css("display", "flex");
+    $("#protected-container").css("margin-left", "0");
     $('#general-container').html('')
     var dataset = $('#dataset-val').val();
 
