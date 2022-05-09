@@ -308,7 +308,7 @@ def datasets_names_to_json():
     return datasets_list
 
 
-def datasets_without_condition_to_json():
+def datasets_without_condition():
     non_deepmatcher_datasets = []
     datasets_without_condition = []
     deepmatcher_datasets = ["DBLP-ACM", "Amazon-Google", "iTunes-Amazon", "Beer", "Fodors-Zagats", "Walmart-Amazon", "DBLP-GoogleScholar"]
@@ -330,16 +330,25 @@ def datasets_without_condition_to_json():
 
     
 
+def non_cached_datasets():
+    non_cached_datasets = []
 
-
-
-
-
-    return datasets_without_condition
-    
+    parent_dir = Path(os.getcwd()).parent.absolute()
+    os.chdir(parent_dir)
+    datasets_dir = os.path.join('resources', 'Datasets')
+    for path in Path(datasets_dir).iterdir():
+        if path.is_dir():
+            dm_results = os.path.join(path, 'dm_results.csv')
+            if not os.path.isfile(dm_results):
+                non_cached_datasets.append(os.path.basename(path))
+                print(os.path.basename(path))
     
     os.chdir(os.path.join(os.getcwd(),'web'))
-    return datasets_list
+    return non_cached_datasets
+
+
+
+
 
 def download_dataset():
     Beer_url = 'http://pages.cs.wisc.edu/~anhai/data1/deepmatcher_data/Structured/Beer/beer_exp_data.zip'

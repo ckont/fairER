@@ -505,10 +505,13 @@ def uploadDataset():
 def getDatasetsNames():
     try:
         data_names_json = methods.datasets_names_to_json()
-        datasets_without_condition = methods.datasets_without_condition_to_json()
+        datasets_without_condition = methods.datasets_without_condition()
+        non_cached_datasets = methods.non_cached_datasets()
         response = app.response_class(
             response = json.dumps({'datasets_list': sorted(data_names_json), 
-                                    'datasets_without_condition': datasets_without_condition}),
+                                    'datasets_without_condition': datasets_without_condition,
+                                    'non_cached_datasets': non_cached_datasets
+                                }),
             mimetype = 'application/json'
         )
         return response

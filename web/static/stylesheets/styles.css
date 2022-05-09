@@ -222,6 +222,16 @@ table tbody tr:nth-of-type(even) {
     animation: spinner 3s linear infinite;
 }
 
+.swal2-actions {
+    width: 500px !important;
+}
+.swal2-actions .swal2-confirm{
+    margin-right: 1%;
+}
+.swal2-actions .swal2-cancel{
+    margin-left: 1%;
+}
+
 @keyframes spinner {
     0% {
         transform: rotate(0deg);

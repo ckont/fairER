@@ -13,6 +13,43 @@ function has_condition() {
         return true
 }
 
+function has_cached_data() {
+    var dataset = $('#dataset-val').val();
+    if (non_cached_datasets.includes(dataset))
+        return false
+    else
+        return true
+}
+
+function produce_explanation(){
+    return new Promise((resolve) => {
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: 'btn btn-success',
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false
+        })
+
+        swalWithBootstrapButtons.fire({
+            title: 'No cached data found!',
+            text: "Do you want to produce the explanation as well? It will save you up some time in case you will need it later!",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, I need explanation!',
+            cancelButtonText: 'I don\'t need explanation!',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                resolve(true);
+            } else if (
+                result.dismiss === Swal.DismissReason.cancel
+            ) {
+                resolve(false);
+            }
+        })
+    })
+}
+
 function deleteDatasetMessage() {
     var dataset = $('#dataset-val').val();
     Swal.fire({
@@ -412,3 +449,4 @@ function pretty_alert(icon, title, text) {
 }
 
 var datasets_without_condition = [];
+var non_cached_datasets = [];
