@@ -12,9 +12,29 @@ def pair_is_protected(tuple=None, dataset=None, return_condition=False, explanat
         return default_conditions.get(dataset) if methods.protectedCond(dataset,0) is None else methods.protectedCond(dataset,0)
     else:
         try:
-            return eval(default_conditions_w_exp[dataset]) if methods.protectedCond(dataset,1) is None else eval(methods.protectedCond(dataset,1))
+            if dataset == 'DBLP-ACM':
+                last_author_fname_l = str(tuple.ltable_authors).split(
+                    ",")[-1].strip().split(" ")[0].replace('.', '')
+                last_author_fname_r = str(tuple.rtable_authors).split(
+                    ",")[-1].strip().split(" ")[0].replace('.', '')
+                last_author_is_female = ('female' in d.get_gender(last_author_fname_l)) or \
+                    ('female' in d.get_gender(last_author_fname_r))
+
+                return last_author_is_female
+            else:
+                return eval(default_conditions_w_exp[dataset]) if methods.protectedCond(dataset,1) is None else eval(methods.protectedCond(dataset,1))
         except AttributeError:
-            return eval(default_conditions[dataset]) if methods.protectedCond(dataset,0) is None else eval(methods.protectedCond(dataset,0))
+            if dataset == 'DBLP-ACM':
+                last_author_fname_l = str(tuple.left_authors).split(
+                    ",")[-1].strip().split(" ")[0].replace('.', '')
+                last_author_fname_r = str(tuple.right_authors).split(
+                    ",")[-1].strip().split(" ")[0].replace('.', '')
+                last_author_is_female = ('female' in d.get_gender(last_author_fname_l)) or \
+                    ('female' in d.get_gender(last_author_fname_r))
+
+                return last_author_is_female
+            else:
+                return eval(default_conditions[dataset]) if methods.protectedCond(dataset,0) is None else eval(methods.protectedCond(dataset,0))
 
     '''elif dataset == 'DBLP-ACM': 
         if return_condition:

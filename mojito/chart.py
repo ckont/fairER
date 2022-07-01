@@ -1,6 +1,8 @@
 import numpy as np
 import os
-from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 
 def average_weight_for_attribute(dataframe, attrname, tuple=None):

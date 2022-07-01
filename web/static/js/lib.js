@@ -1,11 +1,11 @@
 function has_condition() {
     var dataset = $('#dataset-val').val();
     if (datasets_without_condition.includes(dataset)) {
-        Swal.fire({
+        swalWithBootstrapButtons.fire({
             icon: 'info',
             title: 'Oops...',
             text: 'Can\'t perform this operation because there is no protected condition for this dataset yet!',
-            footer: 'Open "Protected Tuples" tab, then press "Edit Condition" button and give the condition of your choice.'
+            footer: 'Open "Protected Tuples" tab, then press "Edit Condition" button and set the condition of your choice.'
         })
         return false
     }
@@ -15,42 +15,78 @@ function has_condition() {
 
 function has_cached_data() {
     var dataset = $('#dataset-val').val();
-    if (non_cached_datasets.includes(dataset))
-        return false
-    else
-        return true
+    clear_all_containers();
+
+    if (non_cached_datasets.includes(dataset)){
+
+        let exp_container = document.createElement('div');
+        exp_container.id = 'explanation-check-container';
+
+        let inner_container = document.createElement('div');
+        inner_container.className = 'inner-container';
+
+        let form_label = document.createElement('label');
+        form_label.innerHTML = 'Do you need explanations?'
+        form_label.htmlFor = "exp-form";
+
+
+        let button = document.createElement('button');
+        button.id = 'hide-btn';
+        button.className = 'btn btn-light'
+        button.innerHTML = 'Hide';
+        button.addEventListener("click", function () {
+            document.getElementById('datasets-info-container').innerHTML = "";
+        });
+
+
+
+        let form = document.createElement('form');
+        form.id = 'exp-form';
+
+
+        let input1 = document.createElement('input');
+        input1.type = 'radio';
+        input1.id = "yes";
+        input1.name = "exp-form";
+        input1.value = "1";
+        input1.checked = "true";
+
+        let yes_label = document.createElement('label');
+        yes_label.innerHTML = 'Yes'
+        yes_label.htmlFor = "yes";
+
+        let input2 = document.createElement('input');
+        input2.type = 'radio';
+        input2.id = "no";
+        input2.name = "exp-form";
+        input2.value = "0";
+
+        let no_label = document.createElement('label');
+        no_label.innerHTML = 'No'
+        no_label.htmlFor = "no";
+
+        form.appendChild(input1);
+        form.appendChild(yes_label);
+        form.appendChild(input2);
+        form.appendChild(no_label);
+
+        let p = document.createElement('p');
+        p.innerHTML = 'It will save you up some time in case you will need them later!'
+
+        inner_container.appendChild(form_label);
+        inner_container.appendChild(button);
+        inner_container.appendChild(form);
+        inner_container.appendChild(p);
+
+        exp_container.appendChild(inner_container);
+
+        document.getElementById('datasets-info-container').append(exp_container);
+    }   
 }
 
-function produce_explanation(){
-    return new Promise((resolve) => {
-        const swalWithBootstrapButtons = Swal.mixin({
-            customClass: {
-                confirmButton: 'btn btn-success',
-                cancelButton: 'btn btn-secondary'
-            },
-            buttonsStyling: false
-        })
 
-        swalWithBootstrapButtons.fire({
-            title: 'No cached data found!',
-            text: "Do you want to produce the explanation as well? It will save you up some time in case you will need it later!",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, I need explanation!',
-            cancelButtonText: 'I don\'t need explanation!',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                resolve(true);
-            } else if (
-                result.dismiss === Swal.DismissReason.cancel
-            ) {
-                resolve(false);
-            }
-        })
-    })
-}
 
-function deleteDatasetMessage() {
+function delete_dataset_message() {
     var dataset = $('#dataset-val').val();
     Swal.fire({
         title: 'Are you sure?',
@@ -62,24 +98,18 @@ function deleteDatasetMessage() {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            deleteDataset(dataset)
-            Swal.fire(
-                'Deleted!',
-                'Your file has been deleted.',
-                'success'
-            )
-            setTimeout(function () { location.reload(); }, 3500);
+            delete_dataset(dataset)
         }
     })
 }
 
-function uploadDatasetInfo() {
+function upload_dataset_info() {
     var htmlRes = '<div id="upload-dataset">'
         + '<div id="upload-instructions">'
         + '<p><b>Instructions to upload your dataset</b></p>'
         + '<ol>'
-        + '<li>The dataset should be a zip file</li>'
-        + '<li>The zip file name will be the name of the dataset</li>'
+        + '<li>The dataset should be a zip file.</li>'
+        + '<li>The zip file name will be the name of the dataset.</li>'
         + '<li>The zip file should contain the following (5) files (no sub-folders!)'
         + '<ul>'
         + '<li>tableA.csv</li>'
@@ -89,74 +119,145 @@ function uploadDatasetInfo() {
         + '<li>train.csv</li>'
         + '</ul>'
         + '</li>'
-        + '<li>Your dataset should be structured as <a'
-        + 'href="https://github.com/anhaidgroup/deepmatcher/blob/master/Datasets.md"'
-        + 'target="_blank">Deepmatcher Datasets</a></li>'
-        + '<li>Once you upload your dataset, you will be able to select it on the dataset selection dropdown</li>'
+        + '<li>Your dataset should be structured as '
+        + '<a href="https://github.com/anhaidgroup/deepmatcher/blob/master/Datasets.md"'
+        + 'target="_blank">Deepmatcher Datasets</a>.</li>'
+        + '<li>Once you upload your dataset, it will be available on the dataset selection dropdown.</li>'
         + '</ol>'
         + '</div>'
         + '<div class="mb-3">'
         + '<form enctype="multipart/form-data" id="dataset-upload-form">'
         + '<label for="dataset-upload-file" class="form-label">Upload your dataset</label>'
         + '<input class="form-control" name="dataset-upload-file" type="file" id="dataset-upload-file" accept=".zip">'
-        + '<button type="button" class="btn btn-success" onclick="uploadDataset()">Upload</button>'
+        + '<button type="button" class="btn btn-success" onclick="upload_dataset()">Upload</button>'
         + '</form>'
         + '</div>'
         + '</div>'
     $('#datasets-info-container').html(htmlRes)
 }
 
-function editCondition() {
+function edit_condition() {
     var htmlRes = '<div class="mb-3">' +
-        '<div id="old-protected-condition"></div>' +
-        '</div><br><br>';
+        '<div id="current-protected-condition"></div>' +
+        '</div><br>';
     $('#protected-container').html(htmlRes)
-    getCondition('old-protected-condition')
+    get_condition('current-protected-condition')
     show_condition_input_fields('protected-container')
-    //getPredictions('fairER', 'general-container') //show predictions //TODO only when predictions are already computed
 }
 
-function show_condition_input_fields(container) {
-    $("#protected-container").css("display", "block");
-    $("#protected-container").css("display", "block");
-    $("#protected-container").css("text-align", "left");
-    var htmlRes = '<div id="change-condition-inputs">'
-    htmlRes += '<div id="left-table"><label for="left-tbl" class="form-label"><b>Left Table Attribute</b></label>'
-    htmlRes += '<select class="form-select" id="left-tbl"></select>'
+function show_condition_input_fields(container_id) {
+    let container = document.createElement('div');
+    container.className = 'change-cond-container';
 
-    htmlRes += '<select class="form-select" id="left-func" style="margin-top:10%; margin-bottom:10%">'
-        + '<option value="in">contains</option>'
-        + '<option value="startswith">starts with</option>'
-        + '<option value="==">is</option>'
-        + '</select>'
+    let left_tuple_container = document.createElement('div');
+    left_tuple_container.className = 'left-tuple';
 
-    htmlRes += '<label for="left-value" class="form-label"><b>Left Attribute Value</b></label>';
-    htmlRes += '<input type="text" class="form-control" id="left-value"></div>';
+    let left_label = document.createElement('label');
+    left_label.innerHTML = '<b>Left Table Attribute</b>'
+    left_label.className = "form-label";
+    left_label.htmlFor = "left-tpl";
 
-    htmlRes += '<div id="logical-operator-container" style="margin-top:2%; margin-left:10%; margin-right:10%">'
-    htmlRes += '<select class="form-select" id="logical-operator">'
-        + '<option value="or">Or</option>'
-        + '<option value="and">And</option>'
-        + '</select>'
-    htmlRes += '</div>'
+    let left_select = document.createElement('select'); 
+    left_select.id = 'left-tpl';
+    left_select.className = 'form-select';
+
+    let left_func = document.createElement('select'); 
+    left_func.id = 'left-func-select'
+    let left_option1 = document.createElement('option');
+    left_option1.text = 'contains';
+    left_option1.value = 'in'
+    left_func.add(left_option1);
+    let left_option2 = document.createElement('option');
+    left_option2.text = 'starts with';
+    left_option2.value = 'startswith'
+    left_func.add(left_option2);
+    let left_option3 = document.createElement('option');
+    left_option3.text = 'is';
+    left_option3.value = '=='
+    left_func.add(left_option3);
+
+    let left_value = document.createElement('input');
+    left_value.type = "text";
+    left_value.className = 'form-control';
+    left_value.id = 'left-value'
+
+    left_tuple_container.appendChild(left_label);
+    left_tuple_container.appendChild(left_select);
+    left_tuple_container.appendChild(left_func);
+    left_tuple_container.appendChild(left_value);
+
+    
+    let logical_op = document.createElement('select'); 
+    logical_op.id = 'logical-op-select'
+    let log_op_option1 = document.createElement('option');
+    log_op_option1.text = 'or';
+    log_op_option1.value = 'or'
+    logical_op.add(log_op_option1);
+    let log_op_option2 = document.createElement('option');
+    log_op_option2.text = 'and';
+    log_op_option2.value = 'and'
+    logical_op.add(log_op_option2);
 
 
-    htmlRes += '<div id="right-table"><label for="right-tbl" class="form-label"><b>Right Table Attribute</b></label>'
-    htmlRes += '<select class="form-select" id="right-tbl"></select>'
 
-    htmlRes += '<select class="form-select" id="right-func" style="margin-top:10%; margin-bottom:10%">'
-        + '<option value="in">contains</option>'
-        + '<option value="startswith">starts with</option>'
-        + '<option value="==">is</option>'
-        + '</select>'
+    let right_tuple_container = document.createElement('div');
+    right_tuple_container.className = 'right-tuple';
 
-    htmlRes += '<label for="right-value" class="form-label"><b>Right Attribute Value</b></label>';
-    htmlRes += '<input type="text" class="form-control" id="right-value"></div>';
+    let right_label = document.createElement('label');
+    right_label.innerHTML = '<b>Right Table Attribute</b>'
+    right_label.className = "form-label";
+    right_label.htmlFor = "right-tpl";
 
-    htmlRes += '</div><br><button type="button" class="btn btn-success" style="margin:0" onclick="postProtectedCondition()">Save new condition</button>'
-    $('#' + container).append(htmlRes)
-    $("#protected-container").css("margin-left", "25%");
-    fill_dropdowns()
+    let right_select = document.createElement('select'); 
+    right_select.id = 'right-tpl';
+    right_select.className = 'form-select';
+
+    let right_func = document.createElement('select'); 
+    right_func.id = 'right-func-select'
+    let right_option1 = document.createElement('option');
+    right_option1.text = 'contains';
+    right_option1.value = 'in'
+    right_func.add(right_option1);
+    let right_option2 = document.createElement('option');
+    right_option2.text = 'starts with';
+    right_option2.value = 'startswith'
+    right_func.add(right_option2);
+    let right_option3 = document.createElement('option');
+    right_option3.text = 'is';
+    right_option3.value = '=='
+    right_func.add(right_option3);
+
+    let right_value = document.createElement('input');
+    right_value.type = "text";
+    right_value.className = 'form-control';
+    right_value.id = 'right-value'
+
+    right_tuple_container.appendChild(right_label);
+    right_tuple_container.appendChild(right_select);
+    right_tuple_container.appendChild(right_func);
+    right_tuple_container.appendChild(right_value);
+
+
+
+    container.appendChild(left_tuple_container);
+    container.appendChild(logical_op);
+    container.appendChild(right_tuple_container);
+
+
+    let button_container = document.createElement('div');
+    button_container.className = 'button-container';
+
+    let btn = document.createElement("button");
+    btn.innerHTML = "Save new condition";
+    btn.className = "btn btn-success";
+    btn.addEventListener("click", function () {
+        post_protected_condition()
+    });
+    button_container.appendChild(btn)
+
+    document.getElementById(container_id).appendChild(container);
+    document.getElementById(container_id).appendChild(button_container);
+    fill_dropdowns();
 }
 
 function fill_dropdowns() {
@@ -169,10 +270,10 @@ function fill_dropdowns() {
         success: function (response) {
             var obj = JSON.parse(response);
             first_attr = obj.shift();
-            $('#left-tbl').html('<option value="' + first_attr + '" selected>' + first_attr + '</option>')
+            $('#left-tpl').html('<option value="' + first_attr + '" selected>' + first_attr + '</option>')
 
             obj.forEach(item =>
-                $('#left-tbl').append('<option value="' + item + '">' + item + '</option>')
+                $('#left-tpl').append('<option value="' + item + '">' + item + '</option>')
             );
         },
         error: function (error) {
@@ -187,9 +288,9 @@ function fill_dropdowns() {
         success: function (response) {
             var obj = JSON.parse(response);
             first_attr = obj.shift();
-            $('#right-tbl').html('<option value="' + first_attr + '" selected>' + first_attr + '</option>')
+            $('#right-tpl').html('<option value="' + first_attr + '" selected>' + first_attr + '</option>')
             obj.forEach(item =>
-                $('#right-tbl').append('<option value="' + item + '">' + item + '</option>')
+                $('#right-tpl').append('<option value="' + item + '">' + item + '</option>')
             );
         },
         error: function (error) {
@@ -198,214 +299,336 @@ function fill_dropdowns() {
     });
 }
 
-/* Radio button (right or left) */
-function getTableOptions() {
-    $("#protected-container").css("display", "flex");
-    $("#protected-container").css("margin-left", "0");
-    $('#general-container').html('')
-    var htmlRes = '<b>Table:</b><div class="form-check">' +
-        '<input class="form-check-input" type="radio" id="left-radio" onclick="getAttributes(\'left\')">' +
-        '<label class="form-check-label" for="left-radio">Left</label>' +
-        '</div>' +
-        '<div class="form-check">' +
-        '<input class="form-check-input" type="radio" id="right-radio" onclick="getAttributes(\'right\')">' +
-        '<label class="form-check-label" for="right-radio">Right</label>' +
-        '</div>';
-    $('#protected-container').html(htmlRes)
+
+
+/* Radio button (right or left) to choose one of the tables */
+function get_table_options() {
+    $("#is-protected-result").html('');
+    var container = document.getElementById('protected-container');
+    container.innerHTML = "";
+
+    let div1 = document.createElement('div');
+    div1.className = "form-check";
+
+    let radio_label = document.createElement('label');
+    radio_label.innerHTML = "<p><b>Left or Right Tuple:</p></b>"
+    container.appendChild(radio_label);
+    
+
+    let input1 = document.createElement('input');
+    input1.className = "form-check-input";
+    input1.type = "radio";
+    input1.id = "left-radio";
+    input1.addEventListener("click", function () {
+        get_attributes('left')
+    });
+
+    let label1 = document.createElement('label');
+    label1.className = "form-check-label";
+    label1.htmlFor = "left-radio";
+    label1.innerHTML = "Left";
+
+    div1.appendChild(input1);
+    div1.appendChild(label1);
+
+
+    let div2 = document.createElement('div');
+    div2.className = "form-check";
+
+    let input2 = document.createElement('input');
+    input2.className = "form-check-input";
+    input2.type = "radio";
+    input2.id = "right-radio";
+    input2.addEventListener("click", function () {
+        get_attributes('right')
+    });
+
+    let label2 = document.createElement('label');
+    label2.className = "form-check-label";
+    label2.htmlFor = "right-radio";
+    label2.innerHTML = "Right";
+
+    div2.appendChild(input2);
+    div2.appendChild(label2);
+
+    container.appendChild(div1);
+    container.appendChild(div2);
 }
 
-function tupleAttributesToInput(attr_list, table) {
-    var htmlRes = '</div> <form id="attr-form">';
+/* Show tuple's attributes as input fields */
+function tuple_attributes_to_input(attr_list, table) {
+    $('#protected-container').html('')
 
+    var protected_container = document.getElementById('protected-container')
+    let container = document.createElement('div');
+    container.id = "tuple-container";
+
+    let form = document.createElement('form');
+    form.id = "attr-form";
+    let label = document.createElement('label');
+    label.className = "title";
+    label.htmlFor = "attr-form";
+    label.innerHTML = "Fill in the fields manually"
+    form.appendChild(label);
+    let div, input;
     for (var value of attr_list) {
-        htmlRes += '<div><label for="' + value + '" class="form-label"><b>' + value + '</b></label>';
-        htmlRes += '<input type="text" class="form-control" id="' + value + '"></div>';
+        div = document.createElement('div');
+
+        label = document.createElement('label');
+        label.className = "form-label";
+        label.htmlFor = value;
+        label.innerHTML = "<b>" + value + "</b>";
+
+        input = document.createElement('input');
+        input.className = "form-control";
+        input.type = "text";
+        input.id = value;
+
+        div.appendChild(label);
+        div.appendChild(input);
+        form.appendChild(div);
     }
 
-    htmlRes += '<button type="button" class="btn btn-success" onclick="tupleIsProtected(\'' + table + '\')">Check</button></form>';
-    htmlRes += '<p id="or-keyword"><b>Or</b></p><div class="mb-3">' +
-        '<form enctype="multipart/form-data" id="json-upload-form">' +
-        '<label for="json-upload-file" class="form-label">Upload your json file</label>' +
-        '<input class="form-control" name="json-upload-file" type="file" id="json-upload-file" accept=".json">' +
-        '<button type="button" class="btn btn-success" onclick="tupleIsProtectedJSON(\'' + table + '\')">Upload</button>' +
-        '<button type="button" class="btn btn-link" onclick="json_tupple_info()">JSON file structure</button>' +
-        '</form>';
-    '</div>';
-    return htmlRes;
+    let btn = document.createElement("button");
+    btn.innerHTML = "Check";
+    btn.className = "btn btn-success";
+    btn.addEventListener("click", function () {
+        tuple_is_protected(table)
+    });
+    div = document.createElement('div');
+    div.className = "form-container";
+
+    div.appendChild(form)
+    div.appendChild(btn)
+    container.appendChild(div);
+
+    let p = document.createElement("p");
+    p.id = "or-keyword";
+    p.innerHTML = "<b>or</b>";
+
+    container.appendChild(p);
+
+    let div2 = document.createElement("div");
+    div2.className = "mb-3";
+
+    let json_form = document.createElement("form");
+    json_form.enctype = "multipart/form-data";
+    json_form.id = "json-upload-form";
+
+    label = document.createElement('label');
+    label.className = "form-label";
+    label.htmlFor = "json-upload-file";
+    label.innerHTML = "Upload your json file";
+
+    input = document.createElement('input');
+    input.className = "form-control";
+    input.name = "json-upload-file"
+    input.type = "file";
+    input.id = "json-upload-file";
+    input.accept = ".json";
+
+    let upload_btn = document.createElement("button");
+    upload_btn.className = "btn btn-success";
+    upload_btn.type = "button";
+    upload_btn.innerHTML = "Upload";
+    upload_btn.addEventListener("click", function () {
+        tuple_is_protected_JSON(table)
+    });
+
+    let json_info_btn = document.createElement("button");
+    json_info_btn.className = "btn btn-link";
+    json_info_btn.type = "button";
+    json_info_btn.innerHTML = "JSON file structure";
+    json_info_btn.addEventListener("click", function () {
+        json_tupple_info();
+    });
+
+    json_form.appendChild(label);
+    json_form.appendChild(input);
+    json_form.appendChild(upload_btn);
+    json_form.appendChild(json_info_btn);
+
+    div2.appendChild(json_form);
+    container.appendChild(div2);
+
+    protected_container.appendChild(container);
 }
 
 /* Message showing the right json structure to represent a tuple */
 function json_tupple_info() {
-    JSONsample = '{ "<b>attributes</b>" : [ <br>{ "Beer_Name" : "Rocket City Red" },<br>' +
-        '{ "Brew_Factory_Name" : "Tarraco Beer"},<br>' +
-        '            ...          <br>' +
-        '{ "AttributeN" : "valueN"} ] }'
-    Swal.fire('Example', JSONsample, 'info')
-}
+    JSONsample = '{ "<b>attributes</b>" : [ <br>'
+        + '<span class="tab"></span>   { "Beer_Name" : "Rocket City Red" },<br>'
+        + '<span class="tab"></span>   { "Brew_Factory_Name" : "Tarraco Beer"},<br>'
+        + '<span class="tab-bg"></span>   ...          <br>'
+        + '<span class="tab"></span>   { "AttributeN" : "valueN"}<br>'
+        + '] }';
 
-function pairAttributesToInput(right_obj, left_obj) {
-    var htmlRes = '<form id="attr-form"><br><h2>Right Table Attributes</h2><br>';
+    swalWithBootstrapButtons.fire({
+        position: 'center',
+        icon: 'info',
+        title: 'Example',
+        html: JSONsample,
+        confirmButtonText: 'Ok',
+    })
+}
+/* Show pair's attributes as input fields */
+function pair_attributes_to_input(right_obj, left_obj) {
+    var protected_container = document.getElementById("protected-container");
+    protected_container.innerHTML = "";
+
+    let container = document.createElement('div');
+    container.id = "pair-container";
+
+
+
+    var form = document.createElement('form');
+    form.id = "attr-form";
+    var label = document.createElement('label');
+    label.className = "title";
+    label.htmlFor = "attr-form";
+    label.innerHTML = "Fill in the fields manually"
+    form.appendChild(label);
+
+    let h2 = document.createElement('h2');
+    h2.innerHTML = "<br>Right Table Attributes<br>"
+    form.appendChild(h2);
+
+
 
     for (var value of right_obj) {
-        htmlRes += '<div><label for="right-' + value + '" class="form-label">' + value + '</label>';
-        htmlRes += '<input type="text" class="form-control" id="right-' + value + '"></div>';
+        let div = document.createElement('div');
+        label = document.createElement('label');
+        label.htmlFor = "right-" + value;
+        label.className = "form-label";
+        label.innerHTML = value;
+        div.appendChild(label);
+
+
+        let input = document.createElement('input');
+        input.type = "text";
+        input.className = "form-control";
+        input.id = "right-" + value;
+        div.appendChild(input);
+
+        form.appendChild(div);
     }
 
-    htmlRes += '<br></br><h2>Left Table Attributes</h2><br>'
+    h2 = document.createElement('h2');
+    h2.innerHTML = "<br><br><br>Left Table Attributes<br>"
+    form.appendChild(h2);
+
+
 
     for (var value of left_obj) {
-        htmlRes += '<div><label for="left-' + value + '" class="form-label">' + value + '</label>';
-        htmlRes += '<input type="text" class="form-control" id="left-' + value + '"></div>';
+        let div = document.createElement('div');
+        label = document.createElement('label');
+        label.htmlFor = "left-" + value;
+        label.className = "form-label";
+        label.innerHTML = value;
+        div.appendChild(label);
+
+        let input = document.createElement('input');
+        input.type = "text";
+        input.className = "form-control";
+        input.id = "left-" + value;
+        div.appendChild(input);
+
+        form.appendChild(div);
     }
 
-    htmlRes += "<br><button type='button' class='btn btn-success' onclick='pairIsProtected();'>Check</button></form>";
-    htmlRes += '<p id="or-keyword"><b>Or</b></p><div class="mb-3">' +
-        '<form enctype="multipart/form-data" id="json-upload-form">' +
-        '<label for="json-upload-file" class="form-label">Upload your json file</label>' +
-        '<input class="form-control" name="json-upload-file" type="file" id="json-upload-file" accept=".json">' +
-        '<button type="button" class="btn btn-success" onclick="pairIsProtectedJSON()">Upload</button>' +
-        '<button type="button" class="btn btn-link" onclick="json_pair_info()">JSON file structure</button>' +
-        '</form>';
-    '</div>';
-    return htmlRes;
+
+    let check_btn = document.createElement("button");
+    check_btn.className = "btn btn-success";
+    check_btn.type = "button";
+    check_btn.innerHTML = "Check";
+    check_btn.addEventListener("click", function () {
+        pair_is_protected()
+    });
+    form.appendChild(check_btn);
+
+    container.appendChild(form);
+
+
+    let p = document.createElement("p");
+    p.id = "or-keyword";
+    p.innerHTML = "<b>or</b>";
+    container.appendChild(p);
+
+    let div = document.createElement("div");
+    div.className = "mb-3";
+
+    form = document.createElement('form');
+    form.enctype = "multipart/form-data";
+    form.id = "json-upload-form";
+
+    label = document.createElement("label");
+    label.htmlFor = "json-upload-file";
+    label.className = "form-label";
+    label.innerHTML = "Upload your json file";
+    form.appendChild(label);
+
+    let input = document.createElement("input");
+    input.name = "json-upload-file";
+    input.className = "form-control";
+    input.type = "file";
+    input.id = "json-upload-file";
+    input.accept = ".json";
+    form.appendChild(input);
+
+    let upload_btn = document.createElement("button");
+    upload_btn.className = "btn btn-success";
+    upload_btn.type = "button";
+    upload_btn.innerHTML = "Upload";
+    upload_btn.addEventListener("click", function () {
+        pair_is_protected_JSON()
+    });
+    form.appendChild(upload_btn);
+
+    let json_info_btn = document.createElement("button");
+    json_info_btn.className = "btn btn-link";
+    json_info_btn.type = "button";
+    json_info_btn.innerHTML = "JSON file structure";
+    json_info_btn.addEventListener("click", function () {
+        json_pair_info()
+    });
+    form.appendChild(json_info_btn);
+    div.appendChild(form);
+
+    container.appendChild(div);
+
+    protected_container.appendChild(container);
 }
+
+
 /* Message showing the right json structure to represent a pair */
 function json_pair_info() {
-    JSONsample = '{ "<b>tables</b>":<br>' +
-        '[ { <b>"left"</b>: [<br>' +
-        '{ "Beer_Name": "Rocket City Red" }, <br>' +
-        '{ "Brew_Factory_Name": "Tarraco Beer" },<br>' +
-        '                  ...<br>' +
-        '{ "LAttributeN": "LValueN" } ]<br>' +
-        '},<br>' +
-        '[ { <b>"right"</b>: [<br>' +
-        '{ "Beer_Name": "Rocket City Red" }, <br>' +
-        '{ "Brew_Factory_Name": "Tarraco Beer" },<br>' +
-        '                  ...<br>' +
-        '{ "RAttributeM": "RValueM" } ]<br>' +
-        '} ]<br>' +
-        '] }<br>';
+    JSONsample = '{ "<b>tables</b>" : [<br>'
+        + '<span class="tab"></span>   { <b>"left"</b>: [<br>'
+        + '<span class="tab-bg"></span>   { "Beer_Name": "Rocket City Red" }, <br>'
+        + '<span class="tab-bg"></span>   { "Brew_Factory_Name": "Tarraco Beer" },<br>'
+        + '<span class="tab-bg"></span><span class="tab"></span>   ...<br>'
+        + '<span class="tab-bg"></span>   { "LAttributeN": "LValueN" } <br>'
+        + '<span class="tab"></span>   ] },<br>'
+        + '<span class="tab"></span>      { <b>"right"</b>: [<br>'
+        + '<span class="tab-bg"></span>   { "Beer_Name": "Rocket City Red" }, <br>'
+        + '<span class="tab-bg"></span>   { "Brew_Factory_Name": "Tarraco Beer" },<br>'
+        + '<span class="tab-bg"></span><span class="tab"></span>   ...<br>'
+        + '<span class="tab-bg"></span>   { "RAttributeM": "RValueM" } <br>'
+        + '<span class="tab"></span>   ] }<br>'
+        + '] }<br>';
 
-
-    Swal.fire('Example', JSONsample, 'info')
+    swalWithBootstrapButtons.fire({
+        width: 630,
+        position: 'center',
+        icon: 'info',
+        title: 'Example',
+        html: JSONsample,
+        confirmButtonText: 'Ok',
+    })
 }
 
 
-
-/* predictions json to html table */
-function predsTableBuilder(jsonData) {
-    preds_HTML_table = "";
-    i = 0;
-    indexH = 0;
-    var body = [];
-    var header = [];
-    var temp = [];
-    for (var value in jsonData) {
-        if (jsonData.hasOwnProperty(value)) {
-            Object.keys(jsonData[value]).forEach(function (key) {
-                header[indexH++] = key;
-                if (key == header[0])
-                    i = 0;
-                temp.push([i++, jsonData[value][key]]);
-            })
-        }
-    }
-    temp.forEach(function (item) {
-        body.push(item[1])
-    });
-    header = header.slice(0, i);
-    preds_HTML_table = '<table class="table" id="table"><caption style="caption-side:top" ><b>Predictions</b></caption><thead><tr>'
-
-    for (var hVal of header)
-        preds_HTML_table += '<th scope="col">' + hVal + '</th>'
-    preds_HTML_table += '</tr></thead><tbody><tr>'
-
-
-    counter = 0;
-    for (var bVal of body) {
-
-        preds_HTML_table += '<td>' + bVal + '</td>';
-        counter++;
-        if (counter == i) {
-            preds_HTML_table += "</tr><tr>";
-            counter = 0;
-        }
-    }
-    preds_HTML_table = preds_HTML_table.substring(0, preds_HTML_table.length - 4);
-    preds_HTML_table += '</tbody></table>';
-
-    return preds_HTML_table;
-}
-
-function getExplanationSwitch() {
-    if ($('input[type=checkbox][id=explanationSwitch]:checked').val())
-        return '1'
-    else
-        return '0'
-}
-
-function clustersTableBuilder(header, body) {
-    clusters_HTML_table = '<table class="table" id="clusters-table"><caption style="caption-side:top" ><b>Clusters</b></caption><thead><tr>'
-    for (var hVal of header)
-        clusters_HTML_table += '<th scope="col">' + hVal + '</th>'
-    clusters_HTML_table += '</tr></thead><tbody>'
-
-    for (index = 0; index < body.length; index++) {
-        clusters_HTML_table += "<tr>"
-        for (var bVal of body[index])
-            clusters_HTML_table += '<td>' + bVal + '</td>'
-        clusters_HTML_table += "</tr>"
-    }
-    clusters_HTML_table += '</tbody></table>'
-    return clusters_HTML_table;
-}
-
-function tableBuilder(header, body, id) {
-    table = '<table class="table" id="' + id + '"><thead><tr>';
-
-    for (var hVal of header)
-        table += '<th scope="col">' + hVal + '</th>'
-    table += '</tr></thead><tbody><tr>'
-
-    for (var bVal of body)
-        table += '<td>' + bVal + '</td>'
-    table += '</tr></tbody></table>'
-
-    return table;
-}
-
-
-function html_table_to_csv(filename) {
-    if (filename == null)
-        filename = "output";
-    filename += ".csv";
-
-    var data = [];
-    var rows = document.querySelectorAll("table tr");
-
-    for (var i = 0; i < rows.length; i++) {
-        var row = [], cols = rows[i].querySelectorAll("td, th");
-        for (var j = 0; j < cols.length; j++)
-            row.push(cols[j].innerText);
-
-        data.push(row.join(","));
-    }
-    downloadCSVFile(data.join("\n"), filename);
-}
-
-function downloadCSVFile(csv, filename) {
-    var csv_file, download_link;
-    csv_file = new Blob([csv], { type: "text/csv" });
-    download_link = document.createElement("a");
-    download_link.download = filename;
-    download_link.href = window.URL.createObjectURL(csv_file);
-    download_link.style.display = "none";
-    document.body.appendChild(download_link);
-    download_link.click();
-}
-
-
-/* Return 'right' if the param string begins with the word "right"
+/* Return 'right' if the param 'str' begins with the word "right"
    otherwise return 'left' */
 function attr_prefix(str) {
     var temp = str.substring(0, 5);
@@ -415,11 +638,80 @@ function attr_prefix(str) {
         return 'left';
 }
 
-function clearPrefix(str) {
+/* Removes the prefix ("right" or "left") from the 'str' */
+function clear_prefix(str) {
     if (attr_prefix(str) == 'right')
         return str.substring(6);
     else
         return str.substring(5);
+}
+
+
+
+/* Description of evaluation results */
+function eval_res_description(container_id){
+    accuracy = 'Accuracy@𝑘: out of 𝑘 returned matches, '
+        +'how many are correct (i.e., in the ground truth of known matches)? Bias@𝑘: following '
+        +'the fairness constraint 𝐹 defined earlier as | (|𝑅𝑝|/𝑘) − (|𝑅𝑛 |/𝑘) | = 𝜖∗, we report '
+        +'the values of (|𝑅𝑝|/𝑘) − (|𝑅𝑛 |/𝑘), with negative values denoting favoring the non-protected '
+        +'group, zero implying no bias, and positive values favoring the protected group.';
+
+    spd = 'The statistical parity difference is a measure of bias, with SPD = 0 indicating no bias '
+        +'(i.e., fair results), while |SPD| = 1 indicates a completely biased algorithm in favor of (SPD = 1), '
+        +'or against (SPD = -1) the protected group. In more detail, SPD is defined as follows:<br> '
+        +'SPD = Pr(y\'=1|p=1)-Pr(y\'=1|p=0), where y\'=1 indicates that the algorithm suggests a record pair to be '
+        +'matching and p=1 (resp. p=0) indicates that this pair is protected (resp. nonprotected).';
+
+    eod = 'The equality of opportunity difference is another measure of bias, with EOD = 0, again, indicating '
+        +'no bias (i.e., fair results), and |EOD = 1| indicating a completely biased algorithm. In more detail, '
+        +'EOD is defined as follows:<br> EOD = Pr(y\'=1|y=1,p=1)-Pr(y\'=1|y=1,p=0), where y\'=1 indicates that the '
+        +'algorithm suggests a record pair to be matching, y=1 indicates that the pair is known to be matching '
+        +'(from the ground truth), and p=1 (resp. p=0) indicates that this pair is protected (resp. nonprotected).';
+
+
+    let container = document.createElement("div"); 
+    container.className = "eval-description";
+    
+    let title = document.createElement("h1");
+    title.innerHTML = 'Evaluation Results Description';
+
+    let grid_container = document.createElement("div");
+    
+    let accuracy_container =  document.createElement("div");
+    accuracy_container.className = 'accuracy-container';
+    let accuracy_title = document.createElement("h2");
+    accuracy_title.innerHTML = 'Accuracy';
+    accuracy_container.appendChild(accuracy_title);
+    let accuracy_descr = document.createElement("p");
+    accuracy_descr.innerHTML = accuracy;
+    accuracy_container.appendChild(accuracy_descr);
+
+    let spd_container =  document.createElement("div");
+    spd_container.className = 'spd-container';
+    let spd_title = document.createElement("h2");
+    spd_title.innerHTML = 'SPD';
+    spd_container.appendChild(spd_title);
+    let spd_descr = document.createElement("p");
+    spd_descr.innerHTML = spd;
+    spd_container.appendChild(spd_descr);
+
+    let eod_container =  document.createElement("div");
+    eod_container.className = 'eod-container';
+    let eod_title = document.createElement("h2");
+    eod_title.innerHTML = 'EOD';
+    eod_container.appendChild(eod_title);
+    let eod_descr = document.createElement("p");
+    eod_descr.innerHTML = eod;
+    eod_container.appendChild(eod_descr);
+
+
+    container.appendChild(title);
+    grid_container.appendChild(accuracy_container);
+    grid_container.appendChild(spd_container);
+    grid_container.appendChild(eod_container);
+    container.appendChild(grid_container);
+
+    document.getElementById(container_id).appendChild(container);
 }
 
 function print_exception(type, exception, file, func, line) {
@@ -428,7 +720,7 @@ function print_exception(type, exception, file, func, line) {
         '<br><b>File Name:</b> ' + file +
         '<br><b>Function Name:</b> ' + func +
         '<br><b>Line Number:</b> ' + line
-    Swal.fire({
+    swalWithBootstrapButtons.fire({
         icon: 'error',
         title: 'Error...',
         html: exception_details
@@ -438,15 +730,36 @@ function print_exception(type, exception, file, func, line) {
 }
 
 function pretty_alert(icon, title, text) {
-    Swal.fire({
+    swalWithBootstrapButtons.fire({
         position: 'center',
         icon: icon,
         title: title,
-        text: text,
+        html: '<p style="text-align: center">' + text + '</p>',
+        timer: 3200,
         showConfirmButton: false,
-        timer: 3000
     })
 }
+
+function clear_all_containers(){
+    document.getElementById('fairer-container').innerHTML = "";
+    document.getElementById('unfair-container').innerHTML = "";
+    document.getElementById('datasets-info-container').innerHTML = "";
+    document.getElementById('protected-container').innerHTML = "";
+    document.getElementById('general-container').innerHTML = "";
+    document.getElementById('statistics-container').innerHTML = "";
+}
+
+function remove_from_noncached_datasets(dataset){
+    non_cached_datasets.splice(non_cached_datasets.indexOf(dataset));
+}
+
+
+const swalWithBootstrapButtons = Swal.mixin({
+    customClass: {
+        confirmButton: 'btn btn-secondary',
+    },
+    buttonsStyling: false
+})
 
 var datasets_without_condition = [];
 var non_cached_datasets = [];

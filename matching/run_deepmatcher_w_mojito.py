@@ -157,5 +157,5 @@ if __name__ == '__main__':
     #unlabeled_file = sys.argv[5] if args else '../resources/datasets/test/test_unlabeled.csv'  # unlabeled data for predictions
 
     preds = run(data_path, train_file, valid_file, test_file)
-    print(preds)
+    #print(preds)
 

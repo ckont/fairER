@@ -1,3 +1,4 @@
+from concurrent.futures import thread
 import inspect
 from pathlib import Path
 from flask import Flask, render_template, request, json
@@ -12,50 +13,75 @@ UPLOAD_DATASET_FOLDER = 'data/datasets'
 UPLOAD_JSON_FOLDER = 'data/datasets'
 ALLOWED_EXTENSIONS = {'json', 'zip'}
 
-# Navigate user to the home page
+
+# Navigate user to the services page
 @app.route('/')
-def index():
-    return render_template('index.html')
+def services():
+    return render_template('services.html')
 
-# Navigate user to the requests page
-@app.route('/requests')
-def requests():
-    return render_template('requests.html')
-
-# Navigate user to the api info page
-@app.route('/api/info')
-def apiInfo():
-    return render_template('api.html')
+# Navigate user to the services manual page
+@app.route('/services-manual')
+def manual():
+    return render_template('manual.html')
 
 
 
-########################################################################################
-# @parameters:                                                                         #
-#          --dataset -> the dataset to get the accuracy                                #
-#          --alg -> run the specific algorithm (fairER or unfair) to get the accuracy  #
-########################################################################################
+
 @app.route("/requests/getAccuracy")
 def getAccuracy():
-    dataset = request.args.get('dataset')
-    alg = request.args.get('alg')
-    explanation = request.args.get('explanation')
-    accuracy = methods.getAccuracy(alg, dataset, explanation)
-        
-    response = app.response_class(
-        response=json.dumps({'accuracy': accuracy}),
-        mimetype='application/json'
-    )
-    return response
+    """
+        Returns the accuracy.
+
+        The response is in JSON format.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+
+        Parameter alg: The algorithm to run.
+        Precondition: alg is a String, with two possible values: "fairER", "unfair"
+    """
+    try:
+        dataset = request.args.get('dataset')
+        alg = request.args.get('alg')
+        explanation = request.args.get('explanation')
+        accuracy = methods.getAccuracy(alg, dataset, explanation)
+
+        response = app.response_class(
+            response=json.dumps(
+                {'Algorithm': alg, 'Dataset': dataset, 'Accuracy': accuracy}, sort_keys=False),
+            mimetype='application/json'
+        )
+        return response
+    except Exception as e:
+        exception_type, exception_object, exception_traceback = sys.exc_info()
+        filename = exception_traceback.tb_frame.f_code.co_filename
+        line_number = exception_traceback.tb_lineno
+        func_name = inspect.stack()[0][3]
+        response = app.response_class(
+            response=json.dumps({'exception_type': str(exception_type), 'exception': str(e),
+                                'func_name': str(func_name+'()'), 'filename': str(filename),
+                                 'line_number': str(line_number)}),
+            mimetype='application/json'
+        )
+        return response
 
 
 
-###############################################################
-# @parameters:                                                #
-#          --dataset -> the dataset to get the SPD            #
-#          --alg -> run the specific algorithm to get the SPD #
-###############################################################
+
+
 @app.route("/requests/getSPD")
 def getSPD():
+    """
+        Returns the SPD.
+
+        The response is in JSON format.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+
+        Parameter alg: The algorithm to run.
+        Precondition: alg is a String, with two possible values: "fairER", "unfair"
+    """
     try:
         dataset = request.args.get('dataset')
         alg = request.args.get('alg')
@@ -63,7 +89,8 @@ def getSPD():
         spd = methods.getSPD(alg, dataset, explanation)
         
         response = app.response_class(
-            response=json.dumps({'spd': spd}),
+            response=json.dumps(
+                {'Algorithm': alg, 'Dataset': dataset, 'SPD': spd}, sort_keys=False),
             mimetype='application/json'
         )
         return response
@@ -80,13 +107,21 @@ def getSPD():
         )
         return response
 
-###############################################################
-# @parameters:                                                #
-#          --dataset -> the dataset to get the EOD            #
-#          --alg -> run the specific algorithm to get the EOD #
-###############################################################
+
+
 @app.route("/requests/getEOD")
 def getEOD():
+    """
+        Returns the EOD.
+
+        The response is in JSON format.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+
+        Parameter alg: The algorithm to run.
+        Precondition: alg is a String, with two possible values: "fairER", "unfair"
+    """
     try:
         dataset = request.args.get('dataset')
         alg = request.args.get('alg')
@@ -94,7 +129,8 @@ def getEOD():
         eod = methods.getEOD(alg, dataset, explanation)
         
         response = app.response_class(
-            response=json.dumps({'eod': eod}),
+            response=json.dumps(
+                {'Algorithm': alg, 'Dataset': dataset, 'EOD': eod}, sort_keys=False),
             mimetype='application/json'
         )
         return response
@@ -112,55 +148,62 @@ def getEOD():
         return response
 
 
-###############################################################################
-# @parameters:                                                                #
-#          --dataset -> the dataset to get the evaluation results for         #
-#          --alg -> run the specific algorithm to get the evaluation results  #
-###############################################################################
+
 @app.route("/requests/getEvaluationResults")
 def getEvaluationResults():
-    try:
-        dataset = request.args.get('dataset')
-        alg = request.args.get('alg')
-        if alg == 'fairER':
-            explanation = request.args.get('explanation')
+    """
+        Returns the Evaluation Results (accuracy, SPD, EOD).
+
+        The response is in JSON format.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+
+        Parameter alg: The algorithm to run.
+        Precondition: alg is a String, with two possible values: "fairER", "unfair"
+    """
+
+    dataset = request.args.get('dataset')
+    alg = request.args.get('alg')
+    explanation = request.args.get('explanation')
+    if alg == 'fairER':
             methods.runFairER(dataset, explanation)
-        else:
-            methods.runUnfair(dataset) 
+    else:
+            methods.runUnfair(dataset)
 
-        with open(os.path.join('data', 'json_data', 'evaluation_data.json')) as json_file: # open the file that was created
-            data = json.load(json_file) # get the data from this file
+        # open the file that was created
+    with open(os.path.join('data', 'json_data', 'evaluation_data.json')) as json_file:
+            data = json.load(json_file)  # get the data from this file
 
-        
-        accuracy = str(data['accuracy'])
-        spd =  str(data['SPD'])
-        eod = str(data['EOD'])
+    accuracy = str(data['accuracy'])
+    spd = str(data['SPD'])
+    eod = str(data['EOD'])
 
-        response = app.response_class(
-            response=json.dumps({'accuracy': accuracy, 'spd': spd, 'eod': eod}),
+    response = app.response_class(
+            response=json.dumps({'Algorithm': alg, 'Dataset': dataset,
+                                'Accuracy': accuracy, 'SPD': spd, 'EOD': eod}, sort_keys=False),
             mimetype='application/json'
         )
-        return response
-    except Exception as e:
-        exception_type, exception_object, exception_traceback = sys.exc_info()
-        filename = exception_traceback.tb_frame.f_code.co_filename
-        line_number = exception_traceback.tb_lineno
-        func_name = inspect.stack()[0][3] 
-        response = app.response_class(
-            response=json.dumps({'exception_type': str(exception_type), 'exception': str(e),
-                                'func_name': str(func_name+'()'), 'filename': str(filename),    
-                                'line_number': str(line_number)}),
-            mimetype='application/json'
-        )
-        return response
+    return response
+     
+     
+    
+    
 
-###############################################################################
-# @parameters:                                                                #
-#          --dataset -> the dataset to get the preds for                      #
-#          --alg -> run the specific algorithm to get the preds               #
-###############################################################################
+
 @app.route('/requests/getPreds', methods=['GET'])
 def getPreds():
+    """
+        Returns the Predictions.
+
+        The response is in JSON format.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+
+        Parameter alg: The algorithm to run.
+        Precondition: alg is a String, with two possible values: "fairER", "unfair"
+    """
     try:
         dataset = request.args.get('dataset')
         alg = request.args.get('alg')
@@ -170,8 +213,9 @@ def getPreds():
         else:
             methods.runUnfair(dataset) 
 
-        with open(os.path.join('data', 'json_data', 'preds_data.json')) as json_file: # open the file that was created
-            data = json.load(json_file) # get the data from this file
+        # open the file that was created
+        with open(os.path.join('data', 'json_data', 'preds_data.json')) as json_file:
+            data = json.load(json_file)  # get the data from this file
 
         response = app.response_class(
             response=json.dumps({'preds': str(data)}),
@@ -191,27 +235,34 @@ def getPreds():
         )
         return response
 
-###############################################################################
-# @parameters:                                                                #
-#          --dataset -> the dataset to get the clusters for                   #
-#          --arg -> run the specific algorithm to get the clusters            #
-###############################################################################
+
+
 @app.route('/requests/getClusters', methods=['GET'])
 def getClust():
+    """
+        Returns the Clusters.
+
+        The response is in JSON format.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+
+        Parameter alg: The algorithm to run.
+        Precondition: alg is a String, with two possible values: "fairER", "unfair"
+    """
     try:
-        alg = request.args.get('alg')
+        alg = request.args.get('alg') 
         dataset = request.args.get('dataset')
         if alg == 'fairER':
-            explanation = request.args.get('explanation')
-            methods.runFairER(dataset, explanation)  
+            methods.runFairER(dataset, explanation=1)
         else:
-            methods.runUnfair(dataset)  
+            methods.runUnfair(dataset)
 
         with open(os.path.join('data', 'json_data', 'clusters_data.json')) as json_file:
             data = json.load(json_file)
 
         response = app.response_class(
-            response=str(data),
+            response=json.dumps({'clusters': str(data["clusters"])}),
             mimetype='application/json'
         )
         return response
@@ -219,36 +270,49 @@ def getClust():
         exception_type, exception_object, exception_traceback = sys.exc_info()
         filename = exception_traceback.tb_frame.f_code.co_filename
         line_number = exception_traceback.tb_lineno
-        func_name = inspect.stack()[0][3] 
+        func_name = inspect.stack()[0][3]
         response = app.response_class(
             response=json.dumps({'exception_type': str(exception_type), 'exception': str(e),
-                                'func_name': str(func_name+'()'), 'filename': str(filename),    
-                                'line_number': str(line_number)}),
+                                'func_name': str(func_name+'()'), 'filename': str(filename),
+                                 'line_number': str(line_number)}),
             mimetype='application/json'
         )
         return response
 
 
-#######################################################################
-# @parameters:                                                        #
-#          --dataset -> the dataset to get the statistics for         #
-#          --arg -> run the specific algorithm to get the statistics  #
-#######################################################################
+
 @app.route('/requests/getStatistics', methods=['GET'])
 def getStats():
+    """
+        Returns the Statistics for a dataset.
+
+        The response is in JSON format.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+    """
     try:
         dataset = request.args.get('dataset')
+        explanation = request.args.get('explanation')
+
+        cur_dir = os.path.abspath(".")
+        dm_results = os.path.join(
+            cur_dir, '..', 'resources', 'Datasets', dataset, 'dm_results.csv')
+
+        if not os.path.isfile(dm_results):
+            methods.runFairER(dataset, explanation)
+
         methods.runStatistics(dataset)
         with open(os.path.join('data', 'json_data', 'statistics_data.json')) as json_file:
             data = json.load(json_file)
-        
+
         response = app.response_class(
-            response=json.dumps({'num_protected_matches': data['num_protected_matches'],
-                                'num_nonprotected_matches':  data['num_nonprotected_matches'],
-                                'avg_score_protected': data['avg_score_protected'],
-                                'avg_score_nonprotected': data['avg_score_nonprotected'],
-                                'avg_score_protected_matches': data['avg_score_protected_matches'],
-                                'avg_score_nonprotected_matches': data['avg_score_nonprotected_matches']}),
+            response=json.dumps({'Number of Protected Matches': data['num_protected_matches'],
+                                'Number of non-Protected Matches':  data['num_nonprotected_matches'],
+                                'Avg Score Protected': data['avg_score_protected'],
+                                'Agv Score non-Protected': data['avg_score_nonprotected'],
+                                'Avg Score Protected Matches': data['avg_score_protected_matches'],
+                                'Avg Score non-Protected Matches': data['avg_score_nonprotected_matches']}, sort_keys=False),
             mimetype='application/json'
         )
         return response
@@ -266,20 +330,27 @@ def getStats():
         )
         return response
 
-#############################################################################
-# @parameters:                                                              #
-#          --dataset -> the dataset that contains this tuple                #
-#          --arg -> left or right table                                     #
-#          --json -> a json object that contains the values for this tuple  #
-#############################################################################
+
+
+
+
 @app.route("/requests/getProtectedCondition")
 def getProtectedCondition():
+    """
+        Returns the Protected Condition for a dataset.
+
+        The response is in JSON format.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+    """
     try:
         dataset = request.args.get('dataset')
-        result = util.pair_is_protected(tuple=None, dataset=dataset, return_condition=True)
+        result = util.pair_is_protected(
+            tuple=None, dataset=dataset, return_condition=True)
         response = app.response_class(
-            response = json.dumps({'condition': str(result)}),
-            mimetype = 'application/json'
+            response=json.dumps({'condition': str(result)}),
+            mimetype='application/json'
         )
         return response
     except Exception as e:
@@ -295,18 +366,28 @@ def getProtectedCondition():
         )
         return response
 
-###############################################################
-# @parameters:                                                #
-#          --dataset -> the dataset to get the attributes for #
-#          --table -> left or right table                     #
-###############################################################
+
+
+
+
 @app.route("/requests/getTableAttributes")
 def getTablesAttributes():
+    """
+        Returns the attributes of the header of a specific table.
+
+        The response is in JSON format.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+
+        Parameter table: The table.
+        Precondition: table is a String, with two possible values: "left", "right",
+        corresponding to "TableA.csv" and "TableB.csv" respectively.
+    """
     try:
         dataset = request.args.get('dataset')
         table = request.args.get('table')
         attributes = methods.getAttributes(table, dataset)
-        
         response = app.response_class(
             response=attributes,
             mimetype='application/json'
@@ -325,14 +406,26 @@ def getTablesAttributes():
         )
         return response
 
-#############################################################################
-# @parameters:                                                              #
-#          --dataset -> the dataset that contains this tuple                #
-#          --arg -> left or right table                                     #
-#          --json -> a json object that contains the values for this tuple  #
-#############################################################################
+
+
+
 @app.route("/requests/tupleIsProtected", methods=['POST'])
 def tupleIsProtected():
+    """
+        Returns whether the tuple is protected
+
+        The response is in JSON format.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+
+        Parameter table: the table.
+        Precondition: table is String, with two possible values: "left", "right"
+
+        Parameter json: The attributes of the tuple.
+        Precondition: json is a String in JSON format, containing all the
+        values for every attribute of this tuple.
+    """
     try:
         request_data = request.get_json()
         dataset = request_data['dataset']
@@ -340,10 +433,11 @@ def tupleIsProtected():
         json_str = request_data['json']
 
         json_obj = json.loads(json_str)
-        result = methods.checkTupleProtected(dataset, table, json_obj["attributes"])
+        result = methods.checkTupleProtected(
+            dataset, table, json_obj["attributes"])
         response = app.response_class(
-            response = json.dumps({'is_protected': str(result)}),
-            mimetype = 'application/json'
+            response=json.dumps({'is_protected': str(result)}),
+            mimetype='application/json'
         )
         return response
     except Exception as e:
@@ -360,14 +454,25 @@ def tupleIsProtected():
         return response
 
 
-##################################################################################
-# @parameters:                                                                   #
-#          --dataset -> the dataset that contains this tuple                     #
-#          --json1 -> a json object that contains the values of the first table  #
-#          --json2 -> a json object that contains the values of the second table #
-##################################################################################
+
 @app.route("/requests/pairIsProtected", methods=['POST'])
 def getPairIsProtected():
+    """
+        Returns whether the pair is protected.
+
+        The response is in JSON format.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+
+        Parameter json1: The attributes of the left tuple.
+        Precondition: json1 is a String in JSON format, containing all the
+        values for every attribute of the left tuple.
+
+        Parameter json2: The attributes of the right tuple.
+        Precondition: json2 is a String in JSON format, containing all the
+        values for every attribute of the left tuple.
+    """
     try:
         request_data = request.get_json()
         dataset = request_data['dataset']
@@ -399,12 +504,7 @@ def getPairIsProtected():
         return response
 
 
-#########################################################################################
-# @parameters:                                                                          #
-#          --dataset -> the dataset for which the protected condition will change       #  
-#          --condition -> the new condition                                             #
-#          --condition_w_exp -> the new condition for the case we explanation is needed #
-#########################################################################################
+
 @app.route("/requests/postProtectedCondition", methods=['POST'])
 def postProtectedCondition():
     try:
@@ -503,6 +603,11 @@ def uploadDataset():
 
 @app.route("/requests/getDatasetsNames", methods=['GET'])
 def getDatasetsNames():
+    """
+        Returns a sorted list of names of all the datasets.
+
+        The response is in JSON format.
+    """
     try:
         data_names_json = methods.datasets_names_to_json()
         datasets_without_condition = methods.datasets_without_condition()
@@ -531,6 +636,12 @@ def getDatasetsNames():
 
 @app.route("/requests/downloadDMdatasets", methods=['POST'])
 def downloadDMdatasets():
+    """
+        Downloads and sets up all the datasets from Deepmatcher.
+        (https://github.com/anhaidgroup/deepmatcher/blob/master/Datasets.md)
+
+        The response is in JSON format.
+    """
     try:
         methods.download_dataset()
         methods.read_dm_datasets()
@@ -552,8 +663,25 @@ def downloadDMdatasets():
         )
         return response
 
+
+
 @app.route("/requests/tupleIsProtectedJSON", methods=['POST'])
 def tupleIsProtectedJSON():
+    """
+        Returns whether the tuple is protected.
+
+        The response is in JSON format.
+
+        Parameter json-upload-file: the file that the user uploaded.
+        Precondition: json-upload-file is File(.json), containing all the
+        values for every attribute of this tuple.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+
+        Parameter table: the table.
+        Precondition: table is String, with two possible values: "left", "right"
+    """
     try:
         # check if the post request has the file part
         if 'json-upload-file' not in request.files:
@@ -605,6 +733,18 @@ def tupleIsProtectedJSON():
 
 @app.route("/requests/pairIsProtectedJSON", methods=['POST'])
 def pairIsProtectedJSON():
+    """
+            Returns whether the pair is protected.
+
+            The response is in JSON format.
+
+            Parameter dataset: the dataset.
+            Precondition: dataset is String.
+
+            Parameter json-upload-file: The attributes of the left tuple.
+            Precondition: json-upload-file is File(.json), containing all the
+            values for every attribute of the pair (left and right tuple).
+    """
     try:
         # check if the post request has the file part
         if 'json-upload-file' not in request.files:
@@ -658,9 +798,17 @@ def pairIsProtectedJSON():
 
 @app.route("/requests/getExplanation", methods=['GET'])
 def getExplanation():
+    """
+        Returns the explanation figures (two base64 images).
+
+        The response is in JSON format.
+
+        Parameter dataset: the dataset.
+        Precondition: dataset is String.
+    """
     try:
         dataset = request.args.get('dataset')   
-        if methods.explanation_exist(dataset) == False:
+        if methods.explanation_exists(dataset) == False:
             methods.deleteCachedData(dataset)
             methods.runFairER(dataset, 1)
         base64_1 = methods.img_to_base64(dataset, 'Figure_1.png')
@@ -686,7 +834,7 @@ def getExplanation():
 
 @app.route("/requests/deleteDataset", methods=['DELETE'])
 def deleteDataset():
-
+    try:
         dataset = request.args.get('dataset')   
         status = methods.delete_dataset(dataset)
         response = app.response_class(
@@ -694,8 +842,20 @@ def deleteDataset():
                 mimetype = 'application/json'
         )
         return response
+    except Exception as e:
+        exception_type, exception_object, exception_traceback = sys.exc_info()
+        filename = exception_traceback.tb_frame.f_code.co_filename
+        line_number = exception_traceback.tb_lineno
+        func_name = inspect.stack()[0][3] 
+        response = app.response_class(
+            response=json.dumps({'exception_type': str(exception_type), 'exception': str(e),
+                                'func_name': str(func_name+'()'), 'filename': str(filename),    
+                                'line_number': str(line_number)}),
+            mimetype='application/json'
+        )
+        return response
     
 
 
 if __name__ == "__main__":
-    app.run(debug=True)  
+    app.run(debug=True, threaded=True)  

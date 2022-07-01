@@ -1,4 +1,4 @@
-function deleteDataset(dataset) {
+function delete_dataset(dataset) {
     $.ajax({
         type: 'DELETE',
         url: "/requests/deleteDataset?dataset=" + dataset,
@@ -8,13 +8,11 @@ function deleteDataset(dataset) {
             var obj = response;
             //If there is no exception 
             if (obj.exception == undefined) {
-                Swal.fire(
-                    'Deleted!',
-                    '<b>"' + dataset + '"</b> has been deleted.',
-                    'success'
-                )
-                setTimeout(function () { location.reload(); }, 3500);
+                pretty_alert('success', 'Done!', '<b>"' + dataset + '"</b> has been deleted successfully!')
+                
+                setTimeout(function () { location.reload(); }, 2600);
             }
+                
             //If there is an exception, print details about it
             else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
         },
@@ -24,13 +22,13 @@ function deleteDataset(dataset) {
     });
 }
 
-function postProtectedCondition() {
-    left_attribute = $("#left-tbl").val();
-    left_func = $("#left-func").val();
+function post_protected_condition() {
+    left_attribute = $("#left-tpl").val();
+    left_func = $("#left-func-select").val();
     left_value = $("#left-value").val();
-    logical_op = $("#logical-operator").val();
-    right_attribute = $("#right-tbl").val();
-    right_func = $("#right-func").val();
+    logical_op = $("#logical-op-select").val();
+    right_attribute = $("#right-tpl").val();
+    right_func = $("#right-func-select").val();
     right_value = $("#right-value").val();
 
     var dataset = $('#dataset-val').val();
@@ -60,7 +58,10 @@ function postProtectedCondition() {
                     showConfirmButton: false,
                     timer: 3200
                 })
-                setTimeout(function () { location.reload(); }, 3200);
+                if(datasets_without_condition.includes(dataset))
+                    datasets_without_condition.splice(datasets_without_condition.indexOf(dataset));
+                non_cached_datasets.push(dataset);
+                clear_all_containers();
             }
             //If there is an exception, print details about it
             else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
@@ -70,10 +71,9 @@ function postProtectedCondition() {
         }
     });
 }
-
-function getCondition(container_id) {
-    $("#protected-container").css("display", "flex");
-    $("#protected-container").css("margin-left", "0");
+/* If the parameter is undefined, it just returns the protected condition,
+    otherwise it prints it in the 'container_id' html element*/
+function get_condition(container_id) {
     var dataset = $('#dataset-val').val();
     $.ajax({
         type: "GET",
@@ -85,7 +85,7 @@ function getCondition(container_id) {
             //If there is no exception 
             if (obj.exception == undefined) {
                 if (container_id != null) {
-                    let hrmlRes = '<label for="condition" class="form-label"><b>Condition:</b></label>'
+                    let hrmlRes = '<label for="condition" class="form-label"><b>Current Condition:</b></label>'
                     hrmlRes += '<p id="condition">&emsp;' + obj.condition + '</p>'
                     $('#' + container_id).html(hrmlRes)
                 }
@@ -104,7 +104,9 @@ function getCondition(container_id) {
     });
 }
 
-function getAttributes(table) {
+
+/* Returns the attributes of a specific dataset's table ('right' or 'left') */
+function get_attributes(table) {
     var dataset = $('#dataset-val').val()
 
     $.ajax({
@@ -116,9 +118,7 @@ function getAttributes(table) {
             var obj = JSON.parse(response);
             //If there is no exception 
             if (obj.exception == undefined) {
-                htmlRes = tupleAttributesToInput(obj, table);
-                $('#protected-container').css('text-align', 'center')
-                $('#protected-container').html(htmlRes);
+                tuple_attributes_to_input(obj, table);
             }
             //If there is an exception, print details about it
             else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
@@ -128,7 +128,9 @@ function getAttributes(table) {
         }
     });
 }
-function tupleIsProtectedJSON(table) {
+
+/* Sends the uploaded JSON file to the server and returns whether the tuple is protected */
+function tuple_is_protected_JSON(table) {
 
     if (has_condition() == false)
         return;
@@ -158,7 +160,6 @@ function tupleIsProtectedJSON(table) {
 
                 else if (data.status == 'datasetexists')
                     pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
-
                 else if (data.status == 'notallowed')
                     pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
                 else {
@@ -174,7 +175,10 @@ function tupleIsProtectedJSON(table) {
     });
 }
 
-function pairIsProtectedJSON() {
+
+
+/* Sends the uploaded JSON file to the server and returns whether the pair is protected */
+function pair_is_protected_JSON() {
 
     if (has_condition() == false)
         return;
@@ -219,7 +223,9 @@ function pairIsProtectedJSON() {
     });
 }
 
-function tupleIsProtected(table) {
+
+/* Prints whether a tuple is protected */
+function tuple_is_protected(table) {
 
     if (has_condition() == false)
         return;
@@ -255,14 +261,14 @@ function tupleIsProtected(table) {
     });
 }
 
-function getPairFields() {
+
+
+/* Returns and prints the attributes of the pair as inputs to the user */
+function get_pair_fields() {
 
     if (has_condition() == false)
         return;
 
-    $("#protected-container").css("display", "flex");
-    $("#protected-container").css("margin-left", "0");
-    $('#general-container').html('')
     var dataset = $('#dataset-val').val();
 
     $.ajax({
@@ -283,7 +289,7 @@ function getPairFields() {
                         var left_obj = JSON.parse(response);
                         //If there is no exception 
                         if (left_obj.exception == undefined)
-                            $('#protected-container').html(pairAttributesToInput(right_obj, left_obj));
+                            pair_attributes_to_input(right_obj, left_obj);
                         //If there is an exception, print details about it
                         else print_exception(left_obj.exception_type, left_obj.exception, left_obj.filename, left_obj.func_name, left_obj.line_number)
                     },
@@ -302,8 +308,8 @@ function getPairFields() {
     });
 }
 
-function pairIsProtected() {
-
+/* Prints whether a tuple is protected */
+function pair_is_protected() {
     if (has_condition() == false)
         return;
 
@@ -314,7 +320,7 @@ function pairIsProtected() {
 
     $("form#attr-form :input").each(function () {
         if ($(this).attr('id') && attr_prefix($(this).attr('id')) == 'right')
-            str1 += '{ "' + clearPrefix($(this).attr('id')) + '": "' + $(this).val() + '" },';
+            str1 += '{ "' + clear_prefix($(this).attr('id')) + '": "' + $(this).val() + '" },';
     });
     str1 = str1.slice(0, -1); //remove the last comma
     str1 += ' ]}';
@@ -323,7 +329,7 @@ function pairIsProtected() {
 
     $("form#attr-form :input").each(function () {
         if ($(this).attr('id') && attr_prefix($(this).attr('id')) == 'left')
-            str2 += '{ "' + clearPrefix($(this).attr('id')) + '": "' + $(this).val() + '" },';
+            str2 += '{ "' + clear_prefix($(this).attr('id')) + '": "' + $(this).val() + '" },';
     });
     str2 = str2.slice(0, -1); //remove the last comma
     str2 += ' ]}';
@@ -351,21 +357,25 @@ function pairIsProtected() {
     });
 }
 
-async function getPredictions(alg, container_id) {
-    var explanation = 1
-
+/* Prints the predictions in the 'container_id' html element */
+function get_predictions(alg, container_id) {
+    var explanation = 1;
+    var dataset = $('#dataset-val').val()
     if (has_condition() == false)
         return;
 
-    if (has_cached_data() == false) {
-        produce_explanation = await produce_explanation();
-        if (produce_explanation)
-            explanation = '1'
-        else explanation = '0'
+
+    if (non_cached_datasets.includes(dataset)){
+        if(document.querySelector('input[name="exp-form"]:checked') == null){
+            has_cached_data();
+            return;
+        }
+        explanation = parseInt(document.querySelector('input[name="exp-form"]:checked').value);
+        document.getElementById('datasets-info-container').innerHTML = "";
     }
 
-    var dataset = $('#dataset-val').val()
     $('#' + container_id).html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
+    
     $.ajax({
         type: "GET",
         url: "/requests/getPreds?alg=" + alg + "&dataset=" + dataset + "&explanation=" + explanation,
@@ -375,9 +385,28 @@ async function getPredictions(alg, container_id) {
             var obj = JSON.parse(response);
             //If there is no exception 
             if (obj.exception == undefined) {
-                var jsonData = eval(obj.preds);
-                htmlRes = predsTableBuilder(jsonData);
-                $('#' + container_id).html(htmlRes);
+                var pred_data = eval(obj.preds);
+
+
+                if (alg == "unfair")
+                    $('#unfair-container').html('<label for="predictions-table">Predictions</label><div id="predictions-table-' + container_id + '"></div>');
+                else
+                    $('#fairer-container').html('<label for="predictions-table">Predictions</label><div id="predictions-table-' + container_id + '"></div>');
+
+                $('#predictions-table-' + container_id).addClass("table-bordered responsive-table striped");
+
+                var table = new Tabulator("#predictions-table-" + container_id, {
+                    data: pred_data,           //load row data from array
+                    layout: "fitColumns",      //fit columns to width of table
+                    responsiveLayout: "hide",  //hide columns that dont fit on the table
+                    addRowPos: "top",          //when adding a new row, add it to the top of the table
+                    pagination: "local",       //paginate the data
+                    paginationSize: 15,         //allow 15 rows per page of data
+                    paginationCounter: "rows", //display count of paginated rows in footer
+                    autoColumns: true,
+                });
+                if(non_cached_datasets.includes(dataset))
+                    remove_from_noncached_datasets(dataset);
             }
             //If there is an exception, print details about it
             else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
@@ -388,36 +417,52 @@ async function getPredictions(alg, container_id) {
     });
 }
 
-async function getClusters(alg, container_id) {
+
+/* Prints the clusters in the 'container_id' html element */
+function get_clusters(alg, container_id) {
     var explanation = 1;
+    var dataset = $('#dataset-val').val()
     if (has_condition() == false)
         return;
 
-    if (has_cached_data() == false) {
-        produce_explanation = await produce_explanation();
-        if (produce_explanation)
-            explanation = '1'
-        else explanation = '0'
+
+    if (non_cached_datasets.includes(dataset)){
+        if(document.querySelector('input[name="exp-form"]:checked') == null){
+            has_cached_data();
+            return;
+        }
+        explanation = parseInt(document.querySelector('input[name="exp-form"]:checked').value);
+        document.getElementById('datasets-info-container').innerHTML = "";
     }
 
-    var dataset = $('#dataset-val').val();
     $('#' + container_id).html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
+
     $.ajax({
         type: "GET",
         url: "/requests/getClusters?alg=" + alg + "&dataset=" + dataset + "&explanation=" + explanation,
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
-            let json_str = String(response).replace(/'/g, '"');
-            const obj = JSON.parse(json_str);
+            var obj = JSON.parse(response);
             //If there is no exception 
             if (obj.exception == undefined) {
-                header = ["TableA", "TableB"];
-                var body = [];
-                for (var cluster of obj.clusters) {
-                    body.push(cluster);
-                }
-                $('#' + container_id).html(clustersTableBuilder(header, body));
+                var clusters_data = eval(obj.clusters);
+                if (alg == "unfair")
+                    $('#unfair-container').html('<label for="clusters-table" id="clusters-label">Clusters</label><div id="clusters-table-' + container_id + '"></div>');
+                else
+                    $('#fairer-container').html('<label for="clusters-table" id="clusters-label">Clusters</label><div id="clusters-table-' + container_id + '"></div>');
+                $('#clusters-table' + container_id).addClass("table-bordered responsive-table");
+                var table = new Tabulator("#clusters-table-" + container_id, {
+                    data: clusters_data,           //load row data from array
+                    layout: "fitColumns",      //fit columns to width of table
+                    responsiveLayout: "hide",  //hide columns that dont fit on the table
+                    addRowPos: "top",          //when adding a new row, add it to the top of the table
+                    pagination: "local",       //paginate the data
+                    paginationSize: 15,         //allow 15 rows per page of data
+                    autoColumns: true,
+                });
+                if(non_cached_datasets.includes(dataset))
+                    remove_from_noncached_datasets(dataset);
             }
             //If there is an exception, print details about it
             else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
@@ -429,47 +474,49 @@ async function getClusters(alg, container_id) {
     });
 }
 
-async function getEvaluation(alg, arg, container_id) {
-    var explanation = 1;
 
+/* Prints the evaluation results in the 'container_id' html element */
+function get_evaluation(alg, container_id) {
+    var explanation = 1;
+    var dataset = $('#dataset-val').val()
     if (has_condition() == false)
         return;
 
-    if (has_cached_data() == false) {
-        produce_explanation = await produce_explanation();
-        if (produce_explanation)
-            explanation = '1'
-        else explanation = '0'
+
+    if (non_cached_datasets.includes(dataset)){
+        if(document.querySelector('input[name="exp-form"]:checked') == null){
+            has_cached_data();
+            return;
+        }
+        explanation = parseInt(document.querySelector('input[name="exp-form"]:checked').value);
+        document.getElementById('datasets-info-container').innerHTML = "";
     }
 
     $('#' + container_id).html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
-    var dataset = $('#dataset-val').val()
+
     $.ajax({
         type: "GET",
-        url: "/requests/get" + arg + "?alg=" + alg + "&dataset=" + dataset + "&explanation=" + explanation,
+        url: "/requests/getEvaluationResults?alg=" + alg + "&dataset=" + dataset + "&explanation=" + explanation,
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
             const obj = JSON.parse(response);
-
-            //If there is no exception 
+            //If there is exception 
             if (obj.exception == undefined) {
-                if (arg == "EvaluationResults")
-                    header = ["Dataset", "Algorithm", "Accuracy", "SPD", "EOD"];
-                else
-                    header = ["Dataset", "Algorithm", arg];
+                $('#' + container_id).html('<label for="eval-table" id="eval-label">Evaluation Results</label><div id="eval-table-' + container_id + '"></div>');
+                $('#eval-table-' + container_id).addClass("table-bordered responsive-table");
 
-                if (arg == "Accuracy")
-                    body = [dataset, alg, obj.accuracy];
-                else if (arg == "SPD")
-                    body = [dataset, alg, obj.spd];
-                else if (arg == "EOD")
-                    body = [dataset, alg, obj.eod];
-                else
-                    body = [dataset, alg, obj.accuracy, obj.spd, obj.eod];
-
-                htmlRes = tableBuilder(header, body, 'eval-table');
-                $('#' + container_id).html(htmlRes);
+                data = '[' + response + ']'
+                data = JSON.parse(JSON.parse(JSON.stringify(data)));
+                var table = new Tabulator("#eval-table-" + container_id, {
+                    data: data,           //load row data from array
+                    layout: "fitColumns",      //fit columns to width of table
+                    responsiveLayout: "hide",  //hide columns that dont fit on the table
+                    autoColumns: true,
+                });
+                eval_res_description(container_id);
+                if(non_cached_datasets.includes(dataset))
+                    remove_from_noncached_datasets(dataset);
             }
             //If there is an exception, print details about it
             else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
@@ -480,30 +527,52 @@ async function getEvaluation(alg, arg, container_id) {
     });
 }
 
-function getStatistics() {
+
+
+/* Prints the statistics */
+function get_statistics() {
+    var explanation = 1
+    
     if (has_condition() == false)
         return;
 
     $('#datasets-info-container').html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
     var dataset = $('#dataset-val').val()
 
+    if (non_cached_datasets.includes(dataset)){
+        if(document.querySelector('input[name="exp-form"]:checked') == null){
+            has_cached_data();
+            return;
+        }
+        explanation = parseInt(document.querySelector('input[name="exp-form"]:checked').value);
+        document.getElementById('datasets-info-container').innerHTML = "";
+    }
+
     $.ajax({
         type: "GET",
-        url: "/requests/getStatistics?dataset=" + dataset,
+        url: "/requests/getStatistics?dataset=" + dataset + "&explanation=" + explanation,
         contentType: "application/json",
         dataType: 'text',
         success: function (response) {
             const obj = JSON.parse(response);
             //If there is no exception 
             if (obj.exception == undefined) {
-                header = ["Number of Protected Matches", "Number of non-Protected Matches",
-                    "Avg. Score Protected", "Agv. Score non-Protected", "Avg Score Protected Matches",
-                    "Avg Score non-Protected Matches"];
-                body = [obj.num_protected_matches, obj.num_nonprotected_matches, obj.avg_score_protected,
-                obj.avg_score_nonprotected, obj.avg_score_protected_matches, obj.avg_score_nonprotected_matches];
 
-                htmlRes = tableBuilder(header, body, 'statistics-table');
-                $('#datasets-info-container').html(htmlRes);
+                $('#datasets-info-container').html('<label for="statistics-table">Statistics</label><div id="statistics-table"></div>');
+                $('#statistics-table').addClass("table-bordered responsive-table");
+
+                data = '[' + response + ']'
+                data = JSON.parse(JSON.parse(JSON.stringify(data)));
+                console.log(data)
+                var table = new Tabulator("#statistics-table", {
+                    data: data,           //load row data from array
+                    layout: "fitColumns",      //fit columns to width of table
+                    responsiveLayout: "hide",  //hide columns that dont fit on the table
+                    autoColumns: true,
+                });
+                if(non_cached_datasets.includes(dataset))
+                    remove_from_noncached_datasets(dataset);
+
             }
             //If there is an exception, print details about it
             else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
@@ -514,7 +583,7 @@ function getStatistics() {
     });
 }
 
-function uploadDataset() {
+function upload_dataset() {
     var form_data = new FormData($('#dataset-upload-form')[0]);
     if (form_data.get("dataset-upload-file")["name"].length == 0) {
         pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
@@ -531,18 +600,36 @@ function uploadDataset() {
         success: function (data) {
             //If there is no exception 
             if (data.exception == undefined) {
-                if (data.status == 'uploaded')
+                if (data.status == 'uploaded'){
                     pretty_alert('success', 'Done!', 'Dataset has been uploaded successfully!')
+
+                    let dataset_name = form_data.get("dataset-upload-file")["name"].slice(0, -4);
+                    var option = document.createElement("option");
+                    option.value = dataset_name;
+                    option.text = dataset_name;
+                    document.getElementById('dataset-val').appendChild(option);
+
+                    document.getElementById('dataset-val').value = dataset_name;
+                    clear_all_containers();
+                    non_cached_datasets.push(dataset_name);
+                    datasets_without_condition.push(dataset_name);
+                    has_cached_data();
+                }
+                    
 
                 else if (data.status == 'nofile')
                     pretty_alert('error', 'Error!', 'You did not select a dataset to upload!')
 
-                else if (data.status == 'datasetexists')
+                else if (data.status == 'datasetexists'){
                     pretty_alert('error', 'Error!', 'A duplicate dataset\'s name found on the system!')
+                    setTimeout(function () { location.reload(); }, 3000);
+                }
 
-                else
+                else{
                     pretty_alert('error', 'Error!', 'Dataset\s file extention should be .zip!')
-                setTimeout(function () { location.reload(); }, 3000);
+                    setTimeout(function () { location.reload(); }, 3000);
+                }
+                    
             }
             //If there is an exception, print details about it
             else print_exception(data.exception_type, data.exception, data.filename, data.func_name, data.line_number)
@@ -550,43 +637,80 @@ function uploadDataset() {
     });
 }
 
-$(document).ready(function () {
-    $.ajax({
-        type: "GET",
-        url: "/requests/getDatasetsNames",
-        success: function (response) {
-            //If there is no exception 
-            if (response.exception == undefined) {
-                datasets_names_list = response.datasets_list
-                if (datasets_names_list.length == 0) {
-                    htmlRes = '<p style="color:red">No datasets found on system!</p>' +
-                        '<b><p>Press the button to download the Datasets from DeepMatcher.</b></p>' +
-                        '<button type="button" class="btn btn-success" onclick="download_dm_datasets()" style="margin-left: 40%">Download</button>';
-                    $('#datasets-container').html(htmlRes)
-                }
-                else {
-                    first_dataset = datasets_names_list.shift();
-                    $('#dataset-val').html('<option value="' + first_dataset + '" selected>' + first_dataset + '</option>')
-
-                    datasets_names_list.forEach(item =>
-                        $('#dataset-val').append('<option value="' + item + '">' + item + '</option>')
-                    );
-
-                    datasets_without_condition = response.datasets_without_condition
+/* (on-page-load) Checks for the available datasets and fills the dataset selection dropdown.
+    If there is no available datasets, it shows an option to download the Deepmatcher datasets. */
+    $(document).ready(function () {
+        $.ajax({
+            type: "GET",
+            url: "/requests/getDatasetsNames",
+            success: function (response) {
+                //If there is no exception 
+                if (response.exception == undefined) {
+                    datasets_names_list = response.datasets_list
                     non_cached_datasets = response.non_cached_datasets
-                }
-            }
-            //If there is an exception, print details about it
-            else print_exception(response.exception_type, response.exception, response.filename, response.func_name, response.line_number)
-        },
-        error: function (error) {
-            console.log(error);
-        }
-    });
-});
+                    datasets_without_condition = response.datasets_without_condition
+                    if (datasets_names_list.length == 0) {
+                        $("#select-dataset-label").html("")
+                        $("#datasets-container").css("display", "block");
+                        $("#datasets-container").css("text-align", "center");
+                        htmlRes = '<p style="color:red">No datasets found on system!</p>' +
+                            '<b><p>Press the button to download the Datasets from DeepMatcher.</b></p>' +
+                            '<button type="button" class="btn btn-success" onclick="download_dm_datasets()">Download</button>';
+                        $('#datasets-container').html(htmlRes)
+                    }
+                    else {
+                        var data = [];
+                        datasets_names_list.forEach(item =>
+                            data.push({ id: item, text: item })
+                        );
+                        $('#datasets-container').html('<select id="dataset-val" style="width:80%;" onchange="has_cached_data()"></select>')
+    
+                        let statistics_btn = document.createElement("button");
+                        statistics_btn.innerHTML = "Dataset Statistics";
+                        statistics_btn.className = "btn btn-secondary";
+                        statistics_btn.addEventListener("click", function () {
+                            get_statistics();
+                        });
+                        $("#datasets-container").append(statistics_btn)
 
+                        let upload_btn = document.createElement("button");
+                        upload_btn.innerHTML = "Upload Dataset";
+                        upload_btn.className = "btn btn-secondary";
+                        upload_btn.addEventListener("click", function () {
+                            clear_all_containers();
+                            upload_dataset_info();
+                        });
+                        $("#datasets-container").append(upload_btn)
+
+                        let delete_btn = document.createElement("button");
+                        delete_btn.innerHTML = "Delete Dataset";
+                        delete_btn.className = "btn btn-danger";
+                        delete_btn.addEventListener("click", function () {
+                            delete_dataset_message();
+                        });
+                        $("#datasets-container").append(delete_btn)
+
+
+    
+                        $("#dataset-val").select2({
+                            data: data
+                        })
+                        has_cached_data();
+                    }
+                }
+                //If there is an exception, print details about it
+                else print_exception(response.exception_type, response.exception, response.filename, response.func_name, response.line_number)
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    });
+
+
+/* Downloads Deepmatcher datasets */
 function download_dm_datasets() {
-    htmlRes = '<b><p>Datasets are dowloading.</b></p><p>Estimated time: 30sec. (depending on your network speed).</p>' +
+    htmlRes = '<b><p>Datasets are dowloading.</b></p><p>Estimated time: 30sec.</p>' +
         '<div class="loader"></div>';
     $('#datasets-container').html(htmlRes)
     $.ajax({
@@ -615,13 +739,15 @@ function download_dm_datasets() {
     });
 }
 
-function getExplanation() {
 
-    if (has_condition() == false)
-        return;
 
+/* Prints explanations */
+function get_explanation() {
     $('#fairer-container').html('<div class="loader"></div><p style="text-align:center; margin-top:1%">Please wait as this may take a few minutes...</p>')
     var dataset = $('#dataset-val').val()
+
+    if (non_cached_datasets.includes(dataset))
+        document.getElementById('datasets-info-container').innerHTML = "";
 
     $.ajax({
         type: "GET",
@@ -631,15 +757,34 @@ function getExplanation() {
             const obj = JSON.parse(response);
             //If there is no exception 
             if (obj.exception == undefined) {
-                var image1 = new Image();
-                image1.src = 'data:image/png;base64,' + obj.base64_1;
-                image1.id = 'explanation-img'
-                $('#fairer-container').html(image1);
 
-                var image2 = new Image();
+                let galery_html = '<div>'
+                    + '<ul id="images">'
+                    + '<li id="first-expl-img"></li>'
+                    + '<li id="second-expl-img"></li>'
+                    + '</ul>'
+                    + '</div>'
+
+
+                let image1 = new Image();
+                image1.src = 'data:image/png;base64,' + obj.base64_1;
+                image1.alt = 'Figure 1'
+                image1.id = 'img1'
+
+                let image2 = new Image();
                 image2.src = 'data:image/png;base64,' + obj.base64_2;
-                image2.id = 'explanation-img'
-                $('#fairer-container').append(image2);
+                image2.alt = 'Figure 2'
+                image2.id = 'img2'
+
+
+                $('#fairer-container').html(galery_html);
+                $('#first-expl-img').html(image1);
+                $('#second-expl-img').html(image2);
+                $('#images').hide();
+                let gallery = new Viewer(document.getElementById('images'));
+                gallery.show();
+                if(non_cached_datasets.includes(dataset))
+                    remove_from_noncached_datasets(dataset);
             }
             //If there is an exception, print details about it
             else print_exception(obj.exception_type, obj.exception, obj.filename, obj.func_name, obj.line_number)
